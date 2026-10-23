@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/style.css">
+<title>Рейтинг учеников</title>
+</head>
+<body>
+  <!-- Шапка -->
+  <header class="top">
+    <b>Портал достижений лицея</b>
+    <a id="backLink" href="student.html">← Мой кабинет</a>
+    <a href="bot.html">Telegram-бот</a>
+    <span id="who"></span>
+    <button onclick="api.reset()">Сбросить демо</button>
+    <button onclick="Auth.logout()">Выйти</button>
+  </header>
+
+  <main class="wrap">
+    <!-- Фильтры -->
+    <section class="panel">
+      <h2>Рейтинг учеников</h2>
+      <div class="row">
+        <!-- Категория -->
+        <select id="filterCat">
+          <option value="">Все категории</option>
+          <option value="physics">Физика</option>
+          <option value="math">Математика</option>
+          <option value="informatics">Информатика</option>
+          <option value="project">Проект</option>
+          <option value="volunteering">Волонтёрство</option>
+        </select>
+        <!-- Класс (заполняется динамически) -->
+        <select id="filterClass">
+          <option value="">Все классы</option>
+        </select>
+        <!-- Период -->
+        <input type="date" id="filterFrom" title="От">
+        <input type="date" id="filterTo"   title="До">
+        <!-- Кнопки -->
+        <button onclick="render()">Применить</button>
+        <button class="link" onclick="resetFilters()">Сбросить</button>
+      </div>
+    </section>
+
+    <!-- Топ-10 -->
+    <section class="panel">
+      <h2>Топ-10</h2>
+      <div id="top10" class="top-cards"></div>
+    </section>
+
+    <!-- Полная таблица рейтинга -->
+    <section class="panel">
+      <h2>Полная таблица</h2>
+      <table id="fullRating"></table>
+    </section>
+  </main>
+
+  <script src="data/seed.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Авторизация: пускаем и ученика, и админа
+    const user = Auth.current();
+    if (!user) location.href = "index.html";
+
+    // Экранирование HTML-спецсимволов, чтобы текст не ломал вёрстку
+    const esc = s => String(s).replace(/[&<>"]/g,
+      ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+    // Названия категорий для отображения
+    const CAT_LABELS = {
+      physics: "Физика", math: "Математика", informatics: "Информатика",
+      project: "Проект", volunteering: "Волонтёрство"
+    };
+
+    // Навигация зависит от роли: админ возвращается в админ-панель
+    (function setupNav() {
+      const link = document.getElementById("backLink");
+      if (user.role === "admin") {
+        link.href = "admin.html";
+        link.textContent = "← Админ-панель";
+      }
+    })();
+
+    // CSS-класс медали для карточки топ-10
+    function medalClass(rank) {
+      if (rank === 1) return "gold";
+      if (rank === 2) return "silver";
+      if (rank === 3) return "bronze";
+      return "";
+    }
+
+    // Сбросить все фильтры и перерисовать
+    function resetFilters() {
+      document.getElementById("filterCat").value   = "";
+      document.getElementById("filterClass").value = "";
+      document.getElementById("filterFrom").value  = "";
+      document.getElementById("filterTo").value    = "";
+      render();
+    }
+
+    // Основная функция отрисовки
+    function render() {
+      // Имя пользователя в шапке
+      document.getElementById("who").textContent = user.name;
+
+      // Собрать фильтры из элементов формы
+      const filters = {};
+      const cat = document.getElementById("filterCat").value;
+      if (cat) filters.category = cat;
+      const cls = document.getElementById("filterClass").value;
+      if (cls) filters.classFilter = cls;
+      const from = document.getElementById("filterFrom").value;
+      if (from) filters.from = from;
+      const to = document.getElementById("filterTo").value;
+      if (to) filters.to = to;
+
+      // Получить отсортированный рейтинг из API
+      const board = api.rating.leaderboard(filters);
+
+      // Заполнить выпадающий список классов (сохраняя выбранное значение)
+      const classSelect = document.getElementById("filterClass");
+      const prevClass = classSelect.value;
+      const classes = api.rating.classes();
+      classSelect.innerHTML = '<option value="">Все классы</option>' +
+        classes.map(c => `<option value="${esc(c)}"${c === prevClass ? " selected" : ""}>${esc(c)}</option>`).join("");
+
+      // --- Топ-10: карточки с местом, именем, классом и баллами ---
+      const top = board.slice(0, 10);
+      document.getElementById("top10").innerHTML = top.length
+        ? top.map(r => `
+          <div class="top-card ${medalClass(r.rank)}">
+            <div class="place">#${r.rank}</div>
+            <div class="name">${esc(r.name)}</div>
+            <div class="cls">${esc(r.class)}</div>
+            <div class="pts">${r.total} б.</div>
+          </div>`).join("")
+        : '<p class="hint">Нет данных для отображения</p>';
+
+      // --- Полная таблица рейтинга ---
+      const headerRow = "<tr><th>Место</th><th>Имя</th><th>Класс</th><th>Баллы</th><th>Достижений</th></tr>";
+      const bodyRows = board.map(r => {
+        // Подсветить строку текущего пользователя
+        const isMeClass = r.userId === user.id ? ' class="me"' : "";
+        return `<tr${isMeClass}>
+          <td>${r.rank}</td>
+          <td>${esc(r.name)}</td>
+          <td>${esc(r.class)}</td>
+          <td>${r.total}</td>
+          <td>${r.count}</td>
+        </tr>`;
+      }).join("");
+      document.getElementById("fullRating").innerHTML = headerRow + bodyRows
+        || headerRow + '<tr><td colspan="5" class="hint">Нет данных</td></tr>';
+    }
+
+    // Первичная отрисовка
+    render();
+  </script>
+</body>
+</html>

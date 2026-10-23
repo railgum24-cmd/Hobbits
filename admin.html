@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель — Портал достижений лицея</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Шапка -->
+<header class="top">
+  <b>Портал достижений лицея</b>
+  <a href="rating.html">Рейтинг</a>
+  <a href="bot.html">Telegram-бот</a>
+  <span id="who"></span>
+  <button onclick="api.reset()">Сбросить демо</button>
+  <button onclick="Auth.logout()">Выйти</button>
+</header>
+
+<!-- Основной контент -->
+<main class="wrap">
+
+  <!-- Уведомление -->
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- Сводка -->
+  <section class="panel stats" id="stats">
+    <div><b id="statStudents">0</b><span>Всего учеников</span></div>
+    <div><b id="statTotal">0</b><span>Достижений</span></div>
+    <div><b id="statPending">0</b><span>На проверке</span></div>
+    <div><b id="statApproved">0</b><span>Подтверждено</span></div>
+    <div><b id="statRejected">0</b><span>Отклонено</span></div>
+  </section>
+
+  <!-- Заявки на верификацию -->
+  <section class="panel">
+    <h2>Заявки на верификацию</h2>
+    <div class="table-wrap">
+      <table id="pending">
+        <thead>
+          <tr>
+            <th>Ученик</th>
+            <th>Класс</th>
+            <th>Достижение</th>
+            <th>Категория</th>
+            <th>Тип</th>
+            <th>Уровень</th>
+            <th>Результат</th>
+            <th>Баллы</th>
+            <th>Дата</th>
+            <th>Файл</th>
+            <th>Действие</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Добавить достижение ученику -->
+  <section class="panel">
+    <h2>Добавить достижение ученику</h2>
+    <form id="adminForm" onsubmit="event.preventDefault();addByAdmin()">
+      <div class="form-grid">
+        <label>Ученик
+          <select id="adminStudent" required></select>
+        </label>
+        <label>Название
+          <input id="adminTitle" required placeholder="Название достижения">
+        </label>
+        <label>Категория
+          <select id="adminCat"></select>
+        </label>
+        <label>Тип
+          <select id="adminType"></select>
+        </label>
+        <label>Уровень
+          <select id="adminLevel"></select>
+        </label>
+        <label>Результат
+          <select id="adminResult"></select>
+        </label>
+        <label>Дата
+          <input id="adminDate" type="date" required>
+        </label>
+        <label class="full">Описание
+          <textarea id="adminDesc" rows="2" placeholder="Описание (необязательно)"></textarea>
+        </label>
+      </div>
+      <p style="margin-top:12px"><button type="submit">Добавить (подтверждённое)</button></p>
+    </form>
+  </section>
+
+  <!-- Все достижения -->
+  <section class="panel">
+    <h2>Все достижения</h2>
+    <div class="table-wrap">
+      <table id="allAch">
+        <thead>
+          <tr>
+            <th>Ученик</th>
+            <th>Класс</th>
+            <th>Достижение</th>
+            <th>Категория</th>
+            <th>Тип</th>
+            <th>Уровень</th>
+            <th>Результат</th>
+            <th>Баллы</th>
+            <th>Дата</th>
+            <th>Файл</th>
+            <th>Статус</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <button onclick="exportCSV()">Скачать CSV-отчёт</button>
+  </section>
+
+</main>
+
+<!-- Подключаемые скрипты -->
+<script src="data/seed.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/csv.js"></script>
+
+<script>
+  /* ── Проверка прав: только admin ── */
+  const admin = Auth.guard("admin");
+
+  /* ── Справочники ── */
+  const CATS    = { physics:"Физика", math:"Математика", informatics:"Информатика", project:"Проект", volunteering:"Волонтёрство" };
+  const TYPES   = { olympiad:"Олимпиада", competition:"Конкурс", conference:"Конференция", project:"Проект", volunteering:"Волонтёрство", exam:"Экзамен" };
+  const LEVELS  = { school:"Школьный", city:"Городской", region:"Региональный", federal:"Федеральный" };
+  const RESULTS = { winner:"Победитель", prize:"Призёр", participant:"Участник" };
+  const STATUSES= { pending:"На проверке", approved:"Подтверждено", rejected:"Отклонено" };
+
+  /* ── Экранирование HTML ── */
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+
+  /* ── Уведомление (toast) ── */
+  function say(text, isError) {
+    const t = document.getElementById("toast");
+    t.textContent = text;
+    t.className = "toast" + (isError ? " error" : " success");
+    t.hidden = false;
+    setTimeout(() => { t.hidden = true; }, 3000);
+  }
+
+  /* ── Подтверждение заявки ── */
+  function approve(id) {
+    try {
+      api.achievements.approve(id, admin.id);
+      say("Подтверждено", false);
+    } catch (e) {
+      say(e.message, true);
+    }
+    render();
+  }
+
+  /* ── Отклонение заявки ── */
+  function reject(id) {
+    const comment = prompt("Причина отклонения:");
+    if (!comment) return;
+    try {
+      api.achievements.reject(id, admin.id, comment);
+      say("Отклонено", false);
+    } catch (e) {
+      say(e.message, true);
+    }
+    render();
+  }
+
+  /* ── Добавление достижения от имени админа ── */
+  function addByAdmin() {
+    const data = {
+      userId:      document.getElementById("adminStudent").value,
+      title:       document.getElementById("adminTitle").value.trim(),
+      category:    document.getElementById("adminCat").value,
+      type:        document.getElementById("adminType").value,
+      level:       document.getElementById("adminLevel").value,
+      result:      document.getElementById("adminResult").value,
+      date:        document.getElementById("adminDate").value,
+      description: document.getElementById("adminDesc").value.trim()
+    };
+    if (!data.title || !data.date || !data.userId) {
+      say("Заполните обязательные поля", true);
+      return;
+    }
+    try {
+      api.achievements.createByAdmin(data, admin.id);
+      say("Достижение добавлено и подтверждено", false);
+      document.getElementById("adminForm").reset();
+    } catch (e) {
+      say(e.message, true);
+    }
+    render();
+  }
+
+  /* ── Экспорт CSV-отчёта ── */
+  function exportCSV() {
+    downloadCSV(api.reports.rows(), "achievements_report.csv");
+  }
+
+  /* ── Заполнение select-справочника ── */
+  function fillSelect(id, map) {
+    const sel = document.getElementById(id);
+    sel.innerHTML = "";
+    for (const [k, v] of Object.entries(map)) {
+      sel.innerHTML += '<option value="' + k + '">' + esc(v) + '</option>';
+    }
+  }
+
+  /* ── Имя ученика по id ── */
+  function studentName(id) {
+    const s = api.users.get(id);
+    return s ? esc(s.name) : "—";
+  }
+
+  /* ── Класс ученика по id ── */
+  function studentClass(id) {
+    const s = api.users.get(id);
+    return s ? esc(s.class || s.grade || "") : "—";
+  }
+
+  /* ── Основная отрисовка всех блоков ── */
+  function render() {
+    /* Имя админа в шапке */
+    document.getElementById("who").textContent = admin.name;
+
+    /* Получаем данные */
+    const students = api.users.list().filter(u => u.role === "student");
+    const all      = api.achievements.list();
+    const pending  = all.filter(a => a.status === "pending");
+    const approved = all.filter(a => a.status === "approved");
+    const rejected = all.filter(a => a.status === "rejected");
+
+    /* Сводка — карточки статистики */
+    document.getElementById("statStudents").textContent = students.length;
+    document.getElementById("statTotal").textContent    = all.length;
+    document.getElementById("statPending").textContent  = pending.length;
+    document.getElementById("statApproved").textContent = approved.length;
+    document.getElementById("statRejected").textContent = rejected.length;
+
+    /* Таблица pending-заявок */
+    const pTbody = document.querySelector("#pending tbody");
+    if (pending.length === 0) {
+      pTbody.innerHTML = '<tr><td colspan="11" class="empty">Нет заявок на проверке</td></tr>';
+    } else {
+      pTbody.innerHTML = pending.map(a => {
+        const uid = a.userId || a.studentId;
+        const fileCell = a.fileUrl ? '<a href="' + esc(a.fileUrl) + '" target="_blank" style="color:var(--accent);text-decoration:none">📄 Скан</a>' : '—';
+        return '<tr>'
+        + '<td><b style="color:#fff">' + studentName(uid) + '</b></td>'
+        + '<td>' + studentClass(uid) + '</td>'
+        + '<td>' + esc(a.title) + '</td>'
+        + '<td><span class="tag ' + a.category + '">' + (CATS[a.category] || esc(a.category)) + '</span></td>'
+        + '<td>' + (TYPES[a.type] || esc(a.type)) + '</td>'
+        + '<td>' + (LEVELS[a.level] || esc(a.level)) + '</td>'
+        + '<td><span class="tag ' + a.result + '">' + (RESULTS[a.result] || esc(a.result)) + '</span></td>'
+        + '<td><b style="color:var(--accent)">+' + (a.points ?? "0") + '</b></td>'
+        + '<td>' + esc(a.date) + '</td>'
+        + '<td>' + fileCell + '</td>'
+        + '<td class="actions">'
+          + '<button class="btn-approve approve" onclick="approve(\'' + a.id + '\')">✓ Принять</button>'
+          + '<button class="btn-reject reject"  onclick="reject(\'' + a.id + '\')">✗ Отклонить</button>'
+        + '</td>'
+        + '</tr>';
+      }).join("");
+    }
+
+    /* Таблица всех достижений */
+    const aTbody = document.querySelector("#allAch tbody");
+    if (all.length === 0) {
+      aTbody.innerHTML = '<tr><td colspan="11" class="empty">Достижений пока нет</td></tr>';
+    } else {
+      aTbody.innerHTML = all.map(a => {
+        const uid = a.userId || a.studentId;
+        const fileCell = a.fileUrl ? '<a href="' + esc(a.fileUrl) + '" target="_blank" style="color:var(--accent);text-decoration:none">📄 Скан</a>' : '—';
+        return '<tr class="status-' + a.status + '">'
+        + '<td><b style="color:#fff">' + studentName(uid) + '</b></td>'
+        + '<td>' + studentClass(uid) + '</td>'
+        + '<td>' + esc(a.title) + '</td>'
+        + '<td><span class="tag ' + a.category + '">' + (CATS[a.category] || esc(a.category)) + '</span></td>'
+        + '<td>' + (TYPES[a.type] || esc(a.type)) + '</td>'
+        + '<td>' + (LEVELS[a.level] || esc(a.level)) + '</td>'
+        + '<td><span class="tag ' + a.result + '">' + (RESULTS[a.result] || esc(a.result)) + '</span></td>'
+        + '<td><b style="color:var(--accent)">+' + (a.points ?? "0") + '</b></td>'
+        + '<td>' + esc(a.date) + '</td>'
+        + '<td>' + fileCell + '</td>'
+        + '<td><span class="tag ' + a.status + '">' + (STATUSES[a.status] || esc(a.status)) + '</span></td>'
+        + '</tr>';
+      }).join("");
+    }
+
+    /* Список учеников для формы добавления */
+    const sel = document.getElementById("adminStudent");
+    sel.innerHTML = students.map(s =>
+      '<option value="' + s.id + '">' + esc(s.name) + ' (' + esc(s.class || s.grade || "") + ')</option>'
+    ).join("");
+
+    /* Справочники в select-ах формы */
+    fillSelect("adminCat",    CATS);
+    fillSelect("adminType",   TYPES);
+    fillSelect("adminLevel",  LEVELS);
+    fillSelect("adminResult", RESULTS);
+  }
+
+  /* ── Запуск отрисовки при наличии прав ── */
+  if (admin) render();
+</script>
+
+</body>
+</html>

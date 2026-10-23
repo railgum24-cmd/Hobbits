@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/style.css">
+<title>Личный кабинет</title>
+</head>
+<body>
+  <!-- Шапка: название портала, навигация, имя ученика, кнопки -->
+  <header class="top">
+    <b>Портал достижений лицея</b>
+    <a href="rating.html">Рейтинг</a>
+    <a href="bot.html">Telegram-бот</a>
+    <span id="who"></span>
+    <button onclick="api.reset()">Сбросить демо</button>
+    <button onclick="Auth.logout()">Выйти</button>
+  </header>
+
+  <main class="wrap">
+    <!-- Сообщения: успех / ошибка -->
+    <p id="msg"></p>
+
+    <!-- ===== Блок прогресса ===== -->
+    <section class="panel">
+      <h2>Мой прогресс</h2>
+      <div id="progress-stats"></div>
+    </section>
+
+    <!-- ===== Геймификация и значки ===== -->
+    <section class="panel">
+      <h2>Награды и достижения</h2>
+      <div id="gamification-block"></div>
+    </section>
+
+    <!-- ===== ИИ-помощник лицеиста ===== -->
+    <section class="panel" style="border-left: 4px solid var(--gold);">
+      <h2>🤖 ИИ-помощник лицеиста</h2>
+      <div id="assistant-block"></div>
+    </section>
+
+    <!-- ===== Форма подачи достижения ===== -->
+    <section class="panel">
+      <h2>Подать достижение</h2>
+      <form onsubmit="return addAchievement()">
+        <div class="row">
+          <input id="achTitle" placeholder="Название" required>
+          <select id="achCategory" required>
+            <option value="">Категория…</option>
+            <option value="physics">Физика</option>
+            <option value="math">Математика</option>
+            <option value="informatics">Информатика</option>
+            <option value="project">Проект</option>
+            <option value="volunteering">Волонтёрство</option>
+          </select>
+          <select id="achType" required>
+            <option value="">Тип…</option>
+            <option value="olympiad">Олимпиада</option>
+            <option value="competition">Конкурс</option>
+            <option value="conference">Конференция</option>
+            <option value="project">Проект</option>
+            <option value="volunteering">Волонтёрство</option>
+            <option value="exam">Экзамен</option>
+          </select>
+        </div>
+        <div class="row">
+          <select id="achLevel" required>
+            <option value="">Уровень…</option>
+            <option value="school">Школьный</option>
+            <option value="city">Городской</option>
+            <option value="region">Региональный</option>
+            <option value="federal">Федеральный</option>
+          </select>
+          <select id="achResult" required>
+            <option value="">Результат…</option>
+            <option value="winner">Победитель</option>
+            <option value="prize">Призёр</option>
+            <option value="participant">Участник</option>
+          </select>
+          <input id="achDate" type="date" required>
+        </div>
+        <div class="row">
+          <input id="achFile" placeholder="Ссылка на подтверждение (диплом, грамота, Яндекс.Диск) — опционально" style="width:100%">
+        </div>
+        <textarea id="achDesc" rows="2" placeholder="Описание (необязательно)"></textarea>
+        <button type="submit">Отправить на проверку</button>
+      </form>
+    </section>
+
+    <!-- ===== Таблица достижений ===== -->
+    <section class="panel">
+      <h2>Мои достижения</h2>
+      <table id="myAchievements"></table>
+    </section>
+
+    <!-- Кнопка экспорта портфолио -->
+    <p><button onclick="exportPortfolio()">Скачать портфолио (PDF)</button></p>
+  </main>
+
+  <!-- Подключаем скрипты в нужном порядке -->
+  <script src="data/seed.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/csv.js"></script>
+  <script>
+    // Защита страницы: только ученик
+    const me = Auth.guard("student");
+
+    // Русские названия для отображения
+    const CATS     = { physics: "Физика", math: "Математика", informatics: "Информатика", project: "Проект", volunteering: "Волонтёрство" };
+    const TYPES    = { olympiad: "Олимпиада", competition: "Конкурс", conference: "Конференция", project: "Проект", volunteering: "Волонтёрство", exam: "Экзамен" };
+    const LEVELS   = { school: "Школьный", city: "Городской", region: "Региональный", federal: "Федеральный" };
+    const RESULTS  = { winner: "Победитель", prize: "Призёр", participant: "Участник" };
+    const STATUSES = { pending: "На проверке", approved: "Подтверждено", rejected: "Отклонено" };
+
+    // Экранирование пользовательского ввода, чтобы не ломать вёрстку
+    const esc = s => String(s).replace(/[&<>"]/g,
+      ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+    /**
+     * Показать сообщение пользователю.
+     * @param {string} text  — текст сообщения
+     * @param {boolean} isError — ошибка (красный) или успех (золотой)
+     */
+    function say(text, isError) {
+      const m = document.getElementById("msg");
+      m.textContent = text;
+      m.style.color = isError ? "#a33" : "#8a6d1f";
+    }
+
+    /**
+     * Добавление нового достижения из формы.
+     * Считывает значения полей, вызывает api.achievements.create,
+     * показывает результат и перерисовывает страницу.
+     * @returns {false} — предотвращает отправку формы
+     */
+    function addAchievement() {
+      const title    = document.getElementById("achTitle").value.trim();
+      const category = document.getElementById("achCategory").value;
+      const type     = document.getElementById("achType").value;
+      const level    = document.getElementById("achLevel").value;
+      const result   = document.getElementById("achResult").value;
+      const date     = document.getElementById("achDate").value;
+      const fileUrl  = document.getElementById("achFile").value.trim();
+      const desc     = document.getElementById("achDesc").value.trim();
+
+      try {
+        api.achievements.create({
+          userId:      me.id,
+          title:       title,
+          category:    category,
+          type:        type,
+          level:       level,
+          result:      result,
+          date:        date,
+          fileUrl:     fileUrl,
+          description: desc
+        });
+        say("Достижение отправлено на проверку", false);
+
+        // Очищаем форму после успешной отправки
+        document.getElementById("achTitle").value    = "";
+        document.getElementById("achCategory").value = "";
+        document.getElementById("achType").value     = "";
+        document.getElementById("achLevel").value    = "";
+        document.getElementById("achResult").value   = "";
+        document.getElementById("achDate").value     = "";
+        document.getElementById("achFile").value     = "";
+        document.getElementById("achDesc").value     = "";
+
+        render();
+      } catch (e) {
+        say(e.message, true);
+      }
+      return false;
+    }
+
+    /**
+     * Экспорт портфолио: открывает новое окно с красиво отформатированным
+     * HTML-документом, который можно распечатать как PDF (Ctrl+P).
+     */
+    function exportPortfolio() {
+      const s = api.portfolio.summary(me.id);
+      const u = s.user;
+
+      // Строки таблицы достижений (только подтверждённые)
+      const approved = s.allAchievements.filter(a => a.status === "approved");
+      const rows = approved.map(a =>
+        `<tr>
+          <td>${esc(a.title)}</td>
+          <td>${CATS[a.category] || a.category}</td>
+          <td>${LEVELS[a.level] || a.level}</td>
+          <td>${RESULTS[a.result] || a.result}</td>
+          <td>${a.points}</td>
+          <td>${a.date}</td>
+        </tr>`
+      ).join("");
+
+      // Сводка по категориям
+      const catRows = Object.keys(CATS).map(key => {
+        const c = s.categories[key];
+        return `<tr><td>${CATS[key]}</td><td>${c.count}</td><td>${c.points}</td></tr>`;
+      }).join("");
+
+      // HTML-документ портфолио для печати
+      const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Портфолио — ${esc(u.name)}</title>
+<style>
+  body { font: 13px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 30px; color: #0f172a; }
+  h1 { font-size: 1.4rem; font-weight: 700; border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 4px; }
+  h2 { font-size: 1.05rem; font-weight: 600; margin-top: 24px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
+  th { font-weight: 600; color: #64748b; text-transform: uppercase; font-size: 11px; }
+  .info { color: #64748b; margin-bottom: 16px; font-size: 13px; }
+  .total { font-size: 1.2rem; font-weight: 700; margin-top: 14px; color: #0284c7; }
+  @media print { body { margin: 15px; } }
+</style>
+</head>
+<body>
+  <h1>Официальное портфолио достижений лицеиста</h1>
+  <p class="info">Ученик: <b>${esc(u.name)}</b> | Класс: <b>${esc(u.class)}</b></p>
+  <p class="total">Суммарный подтверждённый балл: ${s.totalPoints}</p>
+
+  <h2>Сводка по категориям</h2>
+  <table>
+    <tr><th>Категория</th><th>Кол-во</th><th>Баллы</th></tr>
+    ${catRows}
+  </table>
+
+  <h2>Подтверждённые достижения (${approved.length})</h2>
+  <table>
+    <tr><th>Достижение</th><th>Категория</th><th>Уровень</th><th>Результат</th><th>Баллы</th><th>Дата</th></tr>
+    ${rows}
+  </table>
+
+  <script>window.print();<\/script>
+</body>
+</html>`;
+
+      // Открываем портфолио в новом окне
+      const w = window.open("", "_blank");
+      w.document.write(html);
+      w.document.close();
+    }
+
+    /**
+     * Перерисовка всех блоков страницы по текущим данным из API.
+     * 1. Имя ученика в шапке
+     * 2. Сводка прогресса (общие баллы и по категориям)
+     * 3. Таблица всех достижений
+     */
+    function render() {
+      // Имя и класс в шапке
+      document.getElementById("who").textContent = me.name + ", " + me.class;
+
+      // Получаем полную сводку из API
+      const s = api.portfolio.summary(me.id);
+
+      // --- Блок прогресса ---
+      // Общая статистика и разбивка по категориям
+      let statsHtml = `<div class="stats" style="margin-bottom:16px">
+        <div><b>${s.totalPoints}</b><span>суммарных баллов</span></div>
+        <div><b>${s.totalAchievements}</b><span>подтверждено</span></div>
+        <div><b>${s.pending}</b><span>на проверке</span></div>
+        <div><b>${s.rejected}</b><span>отклонено</span></div>
+      </div>`;
+
+      // Сводка по каждой категории
+      statsHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px">';
+      for (const key of Object.keys(CATS)) {
+        const c = s.categories[key];
+        statsHtml += `<div class="cat-card-item">
+          <div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">${CATS[key]}</div>
+          <div style="font-size:1.5rem;font-weight:700;color:#fff;margin:4px 0">${c.points} <span style="font-size:0.85rem;font-weight:400;color:var(--text-muted)">б.</span></div>
+          <div class="hint">${c.count} подтверждено</div>
+        </div>`;
+      }
+      statsHtml += '</div>';
+      document.getElementById("progress-stats").innerHTML = statsHtml;
+
+      // --- Блок геймификации и бейджей ---
+      const game = api.gamification.userBadges(me.id);
+      let gameHtml = `<div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <b style="color:#fff">Статус: ${game.level.name} (${game.level.title})</b>
+          <span class="hint">${s.totalPoints} / ${game.level.nextPoints} баллов</span>
+        </div>
+        <progress value="${Math.min(s.totalPoints, game.level.nextPoints)}" max="${game.level.nextPoints}"></progress>
+      </div>`;
+
+      if (game.badges.length > 0) {
+        gameHtml += '<div style="display:flex;gap:12px;flex-wrap:wrap">';
+        for (const b of game.badges) {
+          gameHtml += `<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px" title="${esc(b.desc)}">
+            <span style="font-size:1.4rem">${b.icon}</span>
+            <div><b style="font-size:.85rem;color:#fff">${esc(b.title)}</b><br><small class="hint">${esc(b.desc)}</small></div>
+          </div>`;
+        }
+        gameHtml += '</div>';
+      } else {
+        gameHtml += '<p class="hint">Участвуйте в олимпиадах и проектах, чтобы открыть первые бейджи!</p>';
+      }
+      document.getElementById("gamification-block").innerHTML = gameHtml;
+
+      // --- Блок ИИ-помощника ---
+      const ai = api.assistant.recommend(me.id);
+      let aiHtml = `<div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);padding:18px;border-radius:12px">
+        <p style="margin:0 0 10px;color:#fff;font-weight:600">📊 Академический аудит для ${esc(ai.studentName)}:</p>
+        <ul style="padding-left:18px;margin:0">`;
+      for (const tip of ai.tips) {
+        const formattedTip = esc(tip).replace(/\*\*(.*?)\*\*/g, '<b style="color:var(--accent)">$1</b>');
+        aiHtml += `<li style="margin-bottom:8px;border:none;padding:0;color:var(--text-main);line-height:1.5">${formattedTip}</li>`;
+      }
+      aiHtml += `</ul></div>`;
+      document.getElementById("assistant-block").innerHTML = aiHtml;
+
+      // --- Таблица достижений ---
+      const achRows = s.allAchievements.map(a => {
+        const statusLabel = STATUSES[a.status] || a.status;
+        const comment = a.status === "rejected" && a.comment
+          ? `<br><small style="color:var(--red)">Причина: ${esc(a.comment)}</small>` : "";
+
+        const fileLink = a.fileUrl
+          ? `<a href="${esc(a.fileUrl)}" target="_blank" style="font-size:.85rem;color:var(--accent);text-decoration:none">📄 Диплом</a>`
+          : `<span class="hint">—</span>`;
+
+        return `<tr>
+          <td><b style="color:#fff">${esc(a.title)}</b></td>
+          <td><span class="tag ${a.category}">${CATS[a.category] || a.category}</span></td>
+          <td>${LEVELS[a.level] || a.level}</td>
+          <td><span class="tag ${a.result}">${RESULTS[a.result] || a.result}</span></td>
+          <td><b style="color:var(--accent)">+${a.points}</b></td>
+          <td>${fileLink}</td>
+          <td><span class="tag ${a.status}">${statusLabel}</span>${comment}</td>
+        </tr>`;
+      }).join("");
+
+      document.getElementById("myAchievements").innerHTML =
+        `<tr><th>Достижение</th><th>Категория</th><th>Уровень</th><th>Результат</th><th>Баллы</th><th>Подтверждение</th><th>Статус</th></tr>` + achRows;
+    }
+
+    // Первичная отрисовка, если пользователь авторизован
+    if (me) render();
+  </script>
+</body>
+</html>

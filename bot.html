@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/style.css">
+<title>Telegram-бот лицея (Интерактивное демо)</title>
+<style>
+  body {
+    background: #0e1621;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .phone-frame {
+    width: 100%;
+    max-width: 420px;
+    height: 720px;
+    background: #17212b;
+    border-radius: 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    border: 3px solid #242f3d;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .tg-header {
+    background: #242f3d;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #10161d;
+  }
+  .tg-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #5288c1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .tg-title b { display: block; font-size: 1rem; color: #fff; }
+  .tg-title span { font-size: 0.78rem; color: #7f91a4; }
+  .tg-chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #0e1621;
+  }
+  .tg-msg {
+    max-width: 82%;
+    padding: 9px 13px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .tg-msg.bot {
+    background: #182533;
+    color: #f5f5f5;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+  .tg-msg.user {
+    background: #2b5278;
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .tg-time {
+    font-size: 0.7rem;
+    color: #7f91a4;
+    float: right;
+    margin-left: 8px;
+    margin-top: 4px;
+  }
+  .tg-keyboard {
+    background: #17212b;
+    padding: 8px;
+    border-top: 1px solid #242f3d;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .tg-keyboard button {
+    background: #242f3d;
+    border: none;
+    color: #e4ecf2;
+    padding: 9px 6px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .tg-keyboard button:hover { background: #2f3d4f; }
+  .tg-keyboard button.wide { grid-column: span 2; }
+  .tg-input-bar {
+    background: #17212b;
+    padding: 8px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .tg-input-bar input {
+    flex: 1;
+    background: #242f3d;
+    border: 1px solid #17212b;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+  }
+  .tg-input-bar button {
+    background: #5288c1;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .top-nav {
+    margin-bottom: 14px;
+    display: flex;
+    gap: 12px;
+  }
+  .top-nav a {
+    color: #7f91a4;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 4px 10px;
+    border: 1px solid #242f3d;
+    border-radius: 6px;
+  }
+  .top-nav a:hover { color: #fff; border-color: #5288c1; }
+</style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <a href="student.html">← Кабинет ученика</a>
+    <a href="admin.html">Админ-панель</a>
+    <a href="rating.html">Рейтинг</a>
+  </div>
+
+  <div class="phone-frame">
+    <!-- Шапка Telegram -->
+    <div class="tg-header">
+      <div class="tg-avatar">🧙‍♂️</div>
+      <div class="tg-title">
+        <b>HobbitBot (Лицей)</b>
+        <span>бот • онлайн</span>
+      </div>
+    </div>
+
+    <!-- История сообщений -->
+    <div class="tg-chat" id="chat">
+      <div class="tg-msg bot">
+        👋 Привет! Я <b>HobbitBot</b> — официальный бот Портала достижений лицея.<br><br>
+        Используйте меню снизу для просмотра рейтинга, баллов или отправки нового диплома на верификацию!
+        <span class="tg-time">10:00</span>
+      </div>
+    </div>
+
+    <!-- Интерактивная клавиатура бота -->
+    <div class="tg-keyboard" id="keyboard">
+      <button onclick="handleCmd('📊 Мой рейтинг')">📊 Мой рейтинг</button>
+      <button onclick="handleCmd('🏆 Топ-10 лицея')">🏆 Топ-10 лицея</button>
+      <button onclick="handleCmd('➕ Подать достижение')">➕ Подать достижение</button>
+      <button onclick="handleCmd('📜 Мои заявки')">📜 Мои заявки</button>
+      <button class="wide" onclick="handleCmd('🤖 Совет ИИ-помощника')">🤖 Совет ИИ-помощника</button>
+    </div>
+
+    <!-- Поле ввода текста -->
+    <form class="tg-input-bar" onsubmit="event.preventDefault(); sendCustom();">
+      <input id="tgInput" placeholder="Напишите сообщение..." autocomplete="off">
+      <button type="submit">➤</button>
+    </form>
+  </div>
+
+  <!-- Подключение локальной базы данных -->
+  <script src="data/seed.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Текущий авторизованный пользователь или ученик по умолчанию (Раиль Гумеров)
+    let currentUser = Auth.current() || api.users.students()[0];
+
+    let pendingState = null;
+
+    function getTime() {
+      const now = new Date();
+      return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    }
+
+    function addMsg(text, isUser = false) {
+      const chat = document.getElementById("chat");
+      const div = document.createElement("div");
+      div.className = "tg-msg " + (isUser ? "user" : "bot");
+      div.innerHTML = text + `<span class="tg-time">${getTime()}</span>`;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function sendCustom() {
+      const inp = document.getElementById("tgInput");
+      const text = inp.value.trim();
+      if (!text) return;
+      inp.value = "";
+      handleCmd(text);
+    }
+
+    function handleCmd(text) {
+      addMsg(text, true);
+
+      setTimeout(() => {
+        // Режим пошаговой подачи
+        if (pendingState) {
+          processPending(text);
+          return;
+        }
+
+        if (text === "📊 Мой рейтинг" || text === "/me") {
+          const score = api.rating.userScore(currentUser.id);
+          const board = api.rating.leaderboard();
+          const meRank = board.find(r => r.userId === currentUser.id);
+
+          addMsg(
+            `👤 <b>${currentUser.name} (${currentUser.class})</b><br>` +
+            `⭐ Всего баллов: <b>${score.total}</b><br>` +
+            `🏅 Место в лицее: <b>#${meRank ? meRank.rank : '—'}</b><br><br>` +
+            `<b>Баллы по предметам:</b><br>` +
+            `• ⚛️ Физика: ${score.byCategory.physics || 0} б.<br>` +
+            `• 📐 Математика: ${score.byCategory.math || 0} б.<br>` +
+            `• 💻 Информатика: ${score.byCategory.informatics || 0} б.<br>` +
+            `• 🚀 Проекты: ${score.byCategory.project || 0} б.<br>` +
+            `• 🤝 Волонтёрство: ${score.byCategory.volunteering || 0} б.`
+          );
+          return;
+        }
+
+        if (text === "🏆 Топ-10 лицея" || text === "/top") {
+          const top = api.rating.top10();
+          let msg = "🏆 <b>ТОП-10 УЧЕНИКОВ ЛИЦЕЯ:</b><br><br>";
+          top.forEach(t => {
+            const medal = t.rank === 1 ? '🥇' : t.rank === 2 ? '🥈' : t.rank === 3 ? '🥉' : '▫️';
+            msg += `${medal} <b>${t.rank}. ${t.name}</b> (${t.class}) — <b>${t.total} б.</b><br>`;
+          });
+          addMsg(msg);
+          return;
+        }
+
+        if (text === "🤖 Совет ИИ-помощника" || text === "/ai") {
+          const ai = api.assistant.recommend(currentUser.id);
+          let msg = `🤖 <b>ИИ-анализ для ${ai.studentName}:</b><br><br>`;
+          ai.tips.forEach(t => {
+            msg += `• ${t.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')}<br>`;
+          });
+          addMsg(msg);
+          return;
+        }
+
+        if (text === "📜 Мои заявки" || text === "/status") {
+          const achs = api.achievements.list({ userId: currentUser.id });
+          if (achs.length === 0) {
+            addMsg("У вас пока нет поданных достижений.");
+            return;
+          }
+          let msg = "📜 <b>Ваши достижения и заявки:</b><br><br>";
+          achs.slice(-5).reverse().forEach(a => {
+            const st = a.status === 'approved' ? '✅ Подтверждено' : a.status === 'pending' ? '⏳ На проверке' : '❌ Отклонено';
+            msg += `• <b>${a.title}</b><br>   Статус: ${st} (+${a.points} б.)<br>`;
+            if (a.comment) msg += `   <i>Комментарий: ${a.comment}</i><br>`;
+          });
+          addMsg(msg);
+          return;
+        }
+
+        if (text === "➕ Подать достижение" || text === "/add") {
+          pendingState = { step: "title" };
+          addMsg("📝 <b>Подача достижения через бота</b><br><br>Введите название мероприятия (например: <i>Олимпиада по физике «Росатом»</i>):");
+          return;
+        }
+
+        if (text === "/start") {
+          addMsg(`👋 Привет, <b>${currentUser.name}</b>! Выберите действие в меню:`);
+          return;
+        }
+
+        addMsg("Неизвестная команда. Пожалуйста, используйте кнопки ниже.");
+      }, 250);
+    }
+
+    function processPending(text) {
+      if (pendingState.step === "title") {
+        pendingState.title = text;
+        pendingState.step = "category";
+        addMsg(
+          "Отлично! Теперь введите категорию:<br>" +
+          "<b>physics</b> (Физика), <b>math</b> (Математика), <b>informatics</b> (Информатика), <b>project</b> (Проект) или <b>volunteering</b> (Волонтёрство):"
+        );
+        return;
+      }
+
+      if (pendingState.step === "category") {
+        pendingState.category = text.toLowerCase();
+        if (!["physics", "math", "informatics", "project", "volunteering"].includes(pendingState.category)) {
+          pendingState.category = "informatics";
+        }
+        pendingState.step = "result";
+        addMsg("Укажите результат: <b>winner</b> (Победитель), <b>prize</b> (Призёр) или <b>participant</b> (Участник):");
+        return;
+      }
+
+      if (pendingState.step === "result") {
+        let res = text.toLowerCase();
+        if (!["winner", "prize", "participant"].includes(res)) res = "prize";
+
+        try {
+          const ach = api.achievements.create({
+            userId: currentUser.id,
+            title: pendingState.title,
+            category: pendingState.category,
+            type: "olympiad",
+            level: "city",
+            result: res,
+            date: new Date().toISOString().slice(0, 10),
+            description: "Подано через Telegram-бота"
+          });
+
+          addMsg(
+            `✅ <b>Заявка принята и отправлена учителю!</b><br><br>` +
+            `📌 Достижение: ${ach.title}<br>` +
+            `⭐ Предварительные баллы: <b>+${ach.points} б.</b><br>` +
+            `⏳ Статус: <i>На проверке</i><br><br>` +
+            `Как только учитель подтвердит заявку в админ-панели, баллы будут начислены в рейтинг!`
+          );
+        } catch (e) {
+          addMsg("❌ Ошибка: " + e.message);
+        }
+        pendingState = null;
+      }
+    }
+  </script>
+</body>
+</html>

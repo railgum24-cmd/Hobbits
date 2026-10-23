@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Портал достижений лицея</title>
+  <!-- Подключаем стили -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login">
+
+  <main>
+    <div class="card">
+      <div style="text-align:center;font-size:2.2rem;margin-bottom:6px">🏛️</div>
+      <!-- Заголовок портала -->
+      <h1>Портал достижений лицея</h1>
+      <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:0 0 16px;">Система учёта успехов по физике, математике и IT</p>
+
+      <!-- Область для отображения ошибок -->
+      <div id="error" class="error" hidden></div>
+
+      <!-- ===== Форма входа ===== -->
+      <form id="loginForm" onsubmit="return doLogin()">
+        <label for="loginLogin">Логин</label>
+        <input type="text" id="loginLogin" placeholder="Введите логин" required>
+
+        <label for="loginPassword">Пароль</label>
+        <input type="password" id="loginPassword" placeholder="Введите пароль" required>
+
+        <button type="submit">Войти</button>
+
+        <!-- Переключатель на форму регистрации -->
+        <p class="toggle-link">
+          Нет аккаунта?
+          <a href="#" onclick="toggle(); return false;">Создать аккаунт</a>
+        </p>
+      </form>
+
+      <!-- ===== Форма регистрации (скрыта по умолчанию) ===== -->
+      <form id="registerForm" onsubmit="return doRegister()" hidden>
+        <label for="regName">ФИО</label>
+        <input type="text" id="regName" placeholder="Иванов Иван Иванович" required>
+
+        <label for="regClass">Класс</label>
+        <input type="text" id="regClass" placeholder="10А" required>
+
+        <label for="regLogin">Логин</label>
+        <input type="text" id="regLogin" placeholder="Придумайте логин" required>
+
+        <label for="regPassword">Пароль</label>
+        <input type="password" id="regPassword" placeholder="Придумайте пароль" required>
+
+        <button type="submit">Зарегистрироваться</button>
+
+        <!-- Переключатель на форму входа -->
+        <p class="toggle-link">
+          Уже есть аккаунт?
+          <a href="#" onclick="toggle(); return false;">Войти</a>
+        </p>
+      </form>
+    </div>
+  </main>
+
+  <!-- Подключаем скрипты в нужном порядке -->
+  <script src="data/seed.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    /**
+     * Переключает видимость форм входа и регистрации.
+     * Также скрывает сообщение об ошибке при переключении.
+     */
+    function toggle() {
+      const loginForm    = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const errorBox     = document.getElementById('error');
+
+      // Переключаем видимость форм
+      loginForm.hidden    = !loginForm.hidden;
+      registerForm.hidden = !registerForm.hidden;
+
+      // Скрываем ошибку при переключении
+      errorBox.hidden = true;
+      errorBox.textContent = '';
+    }
+
+    /**
+     * Показывает сообщение об ошибке пользователю.
+     * @param {string} msg — текст ошибки
+     */
+    function showError(msg) {
+      const errorBox = document.getElementById('error');
+      errorBox.textContent = msg;
+      errorBox.hidden = false;
+    }
+
+    /**
+     * Обработчик входа.
+     * Считывает логин и пароль, вызывает Auth.login().
+     * @returns {false} — предотвращает отправку формы
+     */
+    function doLogin() {
+      const login    = document.getElementById('loginLogin').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        Auth.login(login, password);
+        // Auth.login сам перенаправляет на admin.html или student.html
+      } catch (e) {
+        showError(e.message || 'Ошибка входа');
+      }
+
+      return false;
+    }
+
+    /**
+     * Обработчик регистрации.
+     * Создаёт нового пользователя через api.users.create(),
+     * затем выполняет автоматический вход.
+     * @returns {false} — предотвращает отправку формы
+     */
+    function doRegister() {
+      const name     = document.getElementById('regName').value.trim();
+      const cls      = document.getElementById('regClass').value.trim();
+      const login    = document.getElementById('regLogin').value.trim();
+      const password = document.getElementById('regPassword').value;
+
+      try {
+        // Создаём пользователя
+        api.users.create({
+          name:     name,
+          class:    cls,
+          login:    login,
+          password: password
+        });
+
+        // Автоматический вход после регистрации
+        Auth.login(login, password);
+      } catch (e) {
+        showError(e.message || 'Ошибка регистрации');
+      }
+
+      return false;
+    }
+  </script>
+
+</body>
+</html>
