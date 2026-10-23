@@ -4,188 +4,39 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Портал достижений лицея</title>
-  <style>
-    /* Переменные для светлой темы (по умолчанию) */
-    :root {
-      --bg-color: #f0f2f5;
-      --card-bg: #ffffff;
-      --text-color: #333333;
-      --text-muted: #666666;
-      --border-color: #cccccc;
-      --primary-color: #007bff;
-      --primary-hover: #0056b3;
-      --error-bg: #f8d7da;
-      --error-text: #721c24;
-      --theme-btn-bg: #e0e0e0;
-    }
-
-    /* Переменные для тёмной темы */
-    [data-theme="dark"] {
-      --bg-color: #18191a;
-      --card-bg: #242526;
-      --text-color: #e4e6eb;
-      --text-muted: #b0b3b8;
-      --border-color: #3a3b3c;
-      --primary-color: #2f80ed;
-      --primary-hover: #1b60c4;
-      --error-bg: #4c1d24;
-      --error-text: #f87171;
-      --theme-btn-bg: #3a3b3c;
-    }
-
-    /* Базовые стили страницы */
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    /* Шапка с переключателем темы */
-    .theme-header {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-    }
-
-    .theme-toggle-btn {
-      background-color: var(--theme-btn-bg);
-      color: var(--text-color);
-      border: none;
-      padding: 10px 14px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: background-color 0.2s;
-    }
-
-    /* Карточка формы */
-    .card {
-      background-color: var(--card-bg);
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
-      box-sizing: border-box;
-      transition: background-color 0.3s;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 1.6rem;
-      margin: 0 0 8px 0;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 16px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      background-color: var(--card-bg);
-      color: var(--text-color);
-      box-sizing: border-box;
-      font-size: 1rem;
-    }
-
-    input:focus {
-      outline: 2px solid var(--primary-color);
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    button:hover {
-      background-color: var(--primary-hover);
-    }
-
-    .toggle-link {
-      text-align: center;
-      font-size: 0.9rem;
-      margin-top: 16px;
-      color: var(--text-muted);
-    }
-
-    .toggle-link a {
-      color: var(--primary-color);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .toggle-link a:hover {
-      text-decoration: underline;
-    }
-
-    /* Блок ошибок */
-    .error {
-      background-color: var(--error-bg);
-      color: var(--error-text);
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 16px;
-      font-size: 0.9rem;
-      text-align: center;
-      border: 1px solid transparent;
-    }
-  </style>
+  <!-- Подключаем стили -->
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-
-  <!-- Кнопка смены темы -->
-  <header class="theme-header">
-    <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙 Тёмная тема</button>
-  </header>
+<body class="login">
 
   <main>
     <div class="card">
       <div style="text-align:center;font-size:2.2rem;margin-bottom:6px">🏛️</div>
+      <!-- Заголовок портала -->
       <h1>Портал достижений лицея</h1>
       <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:0 0 16px;">Система учёта успехов по физике, математике и IT</p>
 
+      <!-- Область для отображения ошибок -->
       <div id="error" class="error" hidden></div>
 
       <!-- ===== Форма входа ===== -->
       <form id="loginForm" onsubmit="return doLogin()">
         <label for="loginLogin">Логин</label>
-        <input type="text" id="loginLogin" placeholder="Введите логин" autocomplete="username" required>
+        <input type="text" id="loginLogin" placeholder="Введите логин" required>
 
         <label for="loginPassword">Пароль</label>
-        <input type="password" id="loginPassword" placeholder="Введите пароль" autocomplete="current-password" required>
+        <input type="password" id="loginPassword" placeholder="Введите пароль" required>
 
         <button type="submit">Войти</button>
 
+        <!-- Переключатель на форму регистрации -->
         <p class="toggle-link">
           Нет аккаунта?
-          <a href="#" onclick="toggleForm(); return false;">Создать аккаунт</a>
+          <a href="#" onclick="toggle(); return false;">Создать аккаунт</a>
         </p>
       </form>
 
-      <!-- ===== Форма регистрации ===== -->
+      <!-- ===== Форма регистрации (скрыта по умолчанию) ===== -->
       <form id="registerForm" onsubmit="return doRegister()" hidden>
         <label for="regName">ФИО</label>
         <input type="text" id="regName" placeholder="Иванов Иван Иванович" required>
@@ -194,146 +45,106 @@
         <input type="text" id="regClass" placeholder="10А" required>
 
         <label for="regLogin">Логин</label>
-        <input type="text" id="regLogin" placeholder="Придумайте логин" autocomplete="username" required>
+        <input type="text" id="regLogin" placeholder="Придумайте логин" required>
 
         <label for="regPassword">Пароль</label>
-        <input type="password" id="regPassword" placeholder="Придумайте пароль" autocomplete="new-password" required>
+        <input type="password" id="regPassword" placeholder="Придумайте пароль" required>
 
         <button type="submit">Зарегистрироваться</button>
 
+        <!-- Переключатель на форму входа -->
         <p class="toggle-link">
           Уже есть аккаунт?
-          <a href="#" onclick="toggleForm(); return false;">Войти</a>
+          <a href="#" onclick="toggle(); return false;">Войти</a>
         </p>
       </form>
     </div>
   </main>
 
+  <!-- Подключаем скрипты в нужном порядке -->
+  <script src="data/seed.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+
   <script>
-    // ==========================================
-    // ЛОГИКА СМЕНЫ ТЕМЫ
-    // ==========================================
-    
-    // При загрузке страницы проверяем сохранённую тему
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeButtonText(savedTheme);
-
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-      updateThemeButtonText(newTheme);
-    }
-
-    function updateThemeButtonText(theme) {
-      const btn = document.getElementById('themeBtn');
-      if (theme === 'dark') {
-        btn.textContent = '☀️ Светлая тема';
-      } else {
-        btn.textContent = '🌙 Тёмная тема';
-      }
-    }
-
-    // ==========================================
-    // СИМУЛЯЦИЯ ХРАНИЛИЩА И API (вместо внешних файлов)
-    // ==========================================
-    const storage = {
-      get(key) {
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : null;
-      },
-      set(key, value) {
-        localStorage.setItem(key, JSON.stringify(value));
-      }
-    };
-
-    // Создаем демо-админа, если база пуста
-    if (!storage.get('users')) {
-      storage.set('users', [
-        { id: 1, name: 'Администратор', class: 'Преподаватель', login: 'admin', password: 'admin', role: 'admin' }
-      ]);
-    }
-
-    const api = {
-      users: {
-        getAll() {
-          return storage.get('users') || [];
-        },
-        create(userData) {
-          const users = this.getAll();
-          const exists = users.some(u => u.login === userData.login);
-          if (exists) {
-            throw new Error('Пользователь с таким логином уже существует');
-          }
-          const newUser = { id: Date.now(), role: 'student', ...userData };
-          users.push(newUser);
-          storage.set('users', users);
-          return newUser;
-        }
-      }
-    };
-
-    const Auth = {
-      login(login, password) {
-        const users = api.users.getAll();
-        const user = users.find(u => u.login === login && u.password === password);
-        if (!user) {
-          throw new Error('Неверный логин или пароль');
-        }
-        storage.set('currentUser', user);
-        
-        // Симуляция успешного входа вместо перенаправления на другие файлы
-        alert(`Успешный вход! Вы вошли как: ${user.name} (${user.role === 'admin' ? 'Админ' : 'Ученик'})`);
-      }
-    };
-
-    // ==========================================
-    // ИНТЕРФЕЙСНЫЕ ФУНКЦИИ
-    // ==========================================
-    function toggleForm() {
+    /**
+     * Переключает видимость форм входа и регистрации.
+     * Также скрывает сообщение об ошибке при переключении.
+     */
+    function toggle() {
       const loginForm    = document.getElementById('loginForm');
       const registerForm = document.getElementById('registerForm');
       const errorBox     = document.getElementById('error');
 
+      // Переключаем видимость форм
       loginForm.hidden    = !loginForm.hidden;
       registerForm.hidden = !registerForm.hidden;
-      errorBox.hidden     = true;
+
+      // Скрываем ошибку при переключении
+      errorBox.hidden = true;
       errorBox.textContent = '';
     }
 
+    /**
+     * Показывает сообщение об ошибке пользователю.
+     * @param {string} msg — текст ошибки
+     */
     function showError(msg) {
       const errorBox = document.getElementById('error');
       errorBox.textContent = msg;
       errorBox.hidden = false;
     }
 
+    /**
+     * Обработчик входа.
+     * Считывает логин и пароль, вызывает Auth.login().
+     * @returns {false} — предотвращает отправку формы
+     */
     function doLogin() {
       const login    = document.getElementById('loginLogin').value.trim();
       const password = document.getElementById('loginPassword').value;
+
       try {
         Auth.login(login, password);
+        // Auth.login сам перенаправляет на admin.html или student.html
       } catch (e) {
         showError(e.message || 'Ошибка входа');
       }
+
       return false;
     }
 
+    /**
+     * Обработчик регистрации.
+     * Создаёт нового пользователя через api.users.create(),
+     * затем выполняет автоматический вход.
+     * @returns {false} — предотвращает отправку формы
+     */
     function doRegister() {
       const name     = document.getElementById('regName').value.trim();
       const cls      = document.getElementById('regClass').value.trim();
       const login    = document.getElementById('regLogin').value.trim();
       const password = document.getElementById('regPassword').value;
+
       try {
-        api.users.create({ name, class: cls, login, password });
+        // Создаём пользователя
+        api.users.create({
+          name:     name,
+          class:    cls,
+          login:    login,
+          password: password
+        });
+
+        // Автоматический вход после регистрации
         Auth.login(login, password);
       } catch (e) {
         showError(e.message || 'Ошибка регистрации');
       }
+
       return false;
     }
   </script>
+
 </body>
 </html>
