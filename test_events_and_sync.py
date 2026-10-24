@@ -71,7 +71,7 @@ def run_tests():
         "pointsAward": "до +45 баллов",
         "badgeText": "ХАКАТОН",
         "description": "Тестовое соревнование по созданию цифровых сервисов",
-        "registrationLink": "https://t.me/HobbitBot"
+        "registrationLink": "https://t.me/Hobbits22_bot"
     }
     post_data = json.dumps(test_event_payload).encode("utf-8")
     req = urllib.request.Request("http://localhost:8000/api/events", data=post_data, headers={"Content-Type": "application/json"})

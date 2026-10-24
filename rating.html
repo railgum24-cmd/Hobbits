@@ -20,9 +20,10 @@
       </span>
     </div>
     <div class="top-right">
-      <div id="ratingSyncBadge" class="sync-status-pill sync-online" title="Статус синхронизации с сервером и Telegram-ботом">БОТ LIVE</div>
+      <div id="ratingSyncBadge" class="sync-status-pill sync-online" onclick="Storage.openSyncModal()" title="Синхронизация между устройствами (Онлайн) • Нажмите для настроек" style="cursor:pointer;">БОТ LIVE</div>
+      <a href="presentation.html" class="top-nav-btn" style="color:var(--gold); border-color:rgba(245,158,11,0.4);">📊 Презентация</a>
       <a id="backLink" href="student.html" class="top-nav-btn">← Мой кабинет</a>
-      <a href="https://t.me/HobbitBot" target="_blank" class="top-nav-btn">🤖 Telegram-бот</a>
+      <a href="https://t.me/Hobbits22_bot" target="_blank" class="top-nav-btn">🤖 Telegram-бот</a>
       <button id="btnResetDemo" onclick="confirmReset()" class="top-nav-btn warning" hidden>↺ Сбросить демо</button>
       <button id="btnLogout" onclick="Auth.logout()" class="top-nav-btn danger">🚪 Выйти</button>
     </div>

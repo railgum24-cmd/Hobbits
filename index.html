@@ -26,6 +26,13 @@
       </div>
     </div>
     <div class="landing-topbar-right">
+      <div id="landingSyncBadge" class="sync-status-pill sync-online" onclick="Storage.openSyncModal()" title="Синхронизация между устройствами (Онлайн) • Нажмите для настроек" style="cursor:pointer;">
+        ОНЛАЙН
+      </div>
+      <a href="presentation.html" class="topbar-link" style="color:var(--gold); border:1px solid rgba(245,158,11,0.4); padding:4px 10px; border-radius:6px; background:rgba(245,158,11,0.08);">
+        <span>📊</span>
+        <span>Презентация</span>
+      </a>
       <a href="rating.html" class="topbar-link highlight">
         <span>🏆</span>
         <span>Общелицейский рейтинг</span>
@@ -42,9 +49,9 @@
         <span>🔑</span>
         <span>Вход в систему</span>
       </a>
-      <a href="https://t.me/HobbitBot" target="_blank" class="topbar-link">
+      <a href="https://t.me/Hobbits22_bot" target="_blank" class="topbar-link">
         <span>🤖</span>
-        <span>Telegram-бот @HobbitBot</span>
+        <span>Telegram-бот @Hobbits22_bot</span>
       </a>
     </div>
   </header>
@@ -89,9 +96,9 @@
               <span>📜</span>
               <span>Дипломы</span>
             </a>
-            <a href="https://t.me/HobbitBot" target="_blank" class="btn-hero-secondary">
+            <a href="https://t.me/Hobbits22_bot" target="_blank" class="btn-hero-secondary">
               <span>🤖</span>
-              <span>@HobbitBot ↗</span>
+              <span>@Hobbits22_bot ↗</span>
             </a>
           </div>
         </div>
@@ -251,13 +258,13 @@
 
           <!-- Строка 3 (движение влево) -->
           <div class="portal-marquee-row left">
-            <span class="portal-chip lime" onclick="triggerEasterEgg('🤖 @HobbitBot: «Я зафиксировал твой рекорд в SQLite!»')">🤖 HobbitBot помнит всё</span>
+            <span class="portal-chip lime" onclick="triggerEasterEgg('🤖 @Hobbits22_bot: «Я зафиксировал твой рекорд в SQLite!»')">🤖 HobbitBot помнит всё</span>
             <span class="portal-chip orange" onclick="triggerEasterEgg('👑 9Б — абсолютные чемпионы параллели!')">👑 9Б легенды лицея</span>
             <span class="portal-chip cyan" onclick="triggerEasterEgg('✅ Методист и завуч подписали приказ без замечаний!')">✅ завуч одобряет ✓</span>
             <span class="portal-chip pink" onclick="triggerEasterEgg('🧪 Квантовая запутанность зафиксирована!')">🧪 Квантовая оптика</span>
             <span class="portal-chip violet" onclick="triggerEasterEgg('🌐 Web-реестр синхронизирован на 100%')">🌐 Web-реестр 2026</span>
             <!-- Дублирование -->
-            <span class="portal-chip lime" onclick="triggerEasterEgg('🤖 @HobbitBot помнит всё!')">🤖 HobbitBot помнит всё</span>
+            <span class="portal-chip lime" onclick="triggerEasterEgg('🤖 @Hobbits22_bot помнит всё!')">🤖 HobbitBot помнит всё</span>
             <span class="portal-chip orange" onclick="triggerEasterEgg('👑 9Б — абсолютные чемпионы!')">👑 9Б легенды лицея</span>
           </div>
 
@@ -470,11 +477,8 @@
         </div>
 
         <div class="pillar-card">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div class="pillar-code">[03 // МОБИЛЬНЫЙ ШЛЮЗ]</div>
-            <img src="assets/bot_avatar.png" alt="HobbitBot" style="width:36px; height:36px; border-radius:50%; border:2px solid var(--primary); box-shadow:0 0 10px rgba(0,189,125,0.4); object-fit:cover;">
-          </div>
-          <h4 class="pillar-title">TELEGRAM-БОТ @HobbitBot</h4>
+          <div class="pillar-code">[03 // МОБИЛЬНЫЙ ШЛЮЗ]</div>
+          <h4 class="pillar-title">TELEGRAM-БОТ @Hobbits22_bot</h4>
           <p class="pillar-text">
             Подача дипломов, проверка баллов и просмотр открытого рейтинга прямо со смартфона.
           </p>
@@ -505,7 +509,7 @@
     </div>
     <div style="display:flex; gap:16px;">
       <a href="rating.html" style="color:var(--primary); text-decoration:none;">Рейтинг</a>
-      <a href="https://t.me/HobbitBot" target="_blank" style="color:var(--text-muted); text-decoration:none;">Telegram-бот</a>
+      <a href="https://t.me/Hobbits22_bot" target="_blank" style="color:var(--text-muted); text-decoration:none;">Telegram-бот</a>
       <a href="#" style="color:var(--text-subtle); text-decoration:none;">Наверх ↑</a>
     </div>
   </footer>
@@ -648,7 +652,7 @@
       grid.innerHTML = list.map(ev => {
         const bannerStyle = ev.imageUrl ? `background-image:url('${ev.imageUrl}');` : '';
         const hasImgClass = ev.imageUrl ? 'has-img' : '';
-        const regLink = ev.registrationLink || 'https://t.me/HobbitBot';
+        const regLink = ev.registrationLink || 'https://t.me/Hobbits22_bot';
 
         return `
           <div class="event-poster-card" data-tilt>

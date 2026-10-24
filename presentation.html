@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Презентация проекта • Лицейский Реестр Достижений & @Hobbits22_bot</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Oswald:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #070A11;
+      --surface: #0E1422;
+      --surface-card: rgba(18, 25, 42, 0.85);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-accent: rgba(0, 189, 125, 0.35);
+      --primary: #00BD7D;
+      --primary-glow: rgba(0, 189, 125, 0.35);
+      --cyan: #38BDF8;
+      --gold: #F59E0B;
+      --gold-light: #FCD34D;
+      --violet: #A78BFA;
+      --pink: #EC4899;
+      --text-main: #FFFFFF;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    /* Фоновая динамическая сетка и свечение */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: 
+        radial-gradient(circle at 15% 20%, rgba(0, 189, 125, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(56, 189, 248, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.06) 0%, transparent 60%);
+    }
+
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Верхний прогресс-бар */
+    .top-progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--cyan), var(--gold));
+      width: 0%;
+      transition: width 0.35s ease;
+      z-index: 100;
+      box-shadow: 0 0 12px var(--primary);
+    }
+
+    /* Верхний управляющий бар */
+    .pres-header {
+      position: fixed;
+      top: 14px;
+      left: 24px;
+      right: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .pres-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: auto;
+      text-decoration: none;
+    }
+
+    .pres-logo-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: rgba(0, 189, 125, 0.15);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      box-shadow: 0 0 15px rgba(0, 189, 125, 0.3);
+    }
+
+    .pres-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pres-title-text {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #FFFFFF;
+      text-transform: uppercase;
+    }
+
+    .pres-subtitle-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .pres-controls-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .pres-pill-btn {
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: rgba(14, 20, 34, 0.7);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .pres-pill-btn:hover {
+      color: #FFFFFF;
+      border-color: var(--primary);
+      box-shadow: 0 0 12px var(--primary-glow);
+      transform: translateY(-1px);
+    }
+
+    .pres-timer {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--gold);
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Контейнер слайдов */
+    .slides-wrapper {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 60px 80px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.96) translateY(20px);
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                  transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                  visibility 0.4s;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    .slide-inner {
+      width: 100%;
+      max-width: 1140px;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Типографика слайдов */
+    .slide-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .slide-tag.cyan { color: var(--cyan); }
+    .slide-tag.gold { color: var(--gold); }
+    .slide-tag.violet { color: var(--violet); }
+
+    .slide-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 3.2rem;
+      line-height: 1.1;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .slide-title span.lime { color: var(--primary); }
+    .slide-title span.cyan { color: var(--cyan); }
+    .slide-title span.gold { color: var(--gold); }
+    .slide-title span.violet { color: var(--violet); }
+
+    .slide-desc {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 780px;
+      margin-bottom: 32px;
+      font-weight: 300;
+    }
+
+    /* Сетки содержимого */
+    .cards-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 12px;
+    }
+
+    .cards-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+      margin-top: 12px;
+    }
+
+    .cards-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-top: 12px;
+    }
+
+    .feature-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.28s ease;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .feature-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 189, 125, 0.2);
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--primary);
+      opacity: 0.7;
+    }
+
+    .feature-card.cyan::before { background: var(--cyan); }
+    .feature-card.gold::before { background: var(--gold); }
+    .feature-card.violet::before { background: var(--violet); }
+    .feature-card.pink::before { background: var(--pink); }
+
+    .card-icon {
+      font-size: 2.2rem;
+      margin-bottom: 14px;
+      display: inline-block;
+    }
+
+    .card-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #FFFFFF;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .card-text {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Большие метрики / цифры */
+    .metric-hero-box {
+      background: rgba(0, 189, 125, 0.08);
+      border: 1px solid rgba(0, 189, 125, 0.25);
+      border-radius: 20px;
+      padding: 24px 28px;
+      text-align: center;
+    }
+
+    .metric-hero-num {
+      font-family: 'Oswald', sans-serif;
+      font-size: 3.4rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .metric-hero-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .metric-hero-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Код / терминал бейдж */
+    .code-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: var(--cyan);
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    /* Интерактивные демо-кнопки */
+    .slide-cta-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .btn-pres-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.24s ease;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-pres-action.primary {
+      background: var(--primary);
+      color: #070A11;
+      border: 1px solid var(--primary);
+    }
+
+    .btn-pres-action.primary:hover {
+      background: #00DB91;
+      box-shadow: 0 0 25px rgba(0, 189, 125, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .btn-pres-action.secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-pres-action.secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: #FFFFFF;
+      transform: translateY(-2px);
+    }
+
+    /* Превью дипломов на слайде */
+    .diploma-pres-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 12px;
+    }
+
+    .diploma-pres-card {
+      background: rgba(14, 20, 32, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.28s ease, border-color 0.28s ease;
+    }
+
+    .diploma-pres-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      border-color: var(--primary);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+    }
+
+    .diploma-pres-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .diploma-pres-body {
+      padding: 14px 16px;
+    }
+
+    .diploma-pres-rank {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .diploma-pres-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #FFFFFF;
+      margin: 4px 0 2px;
+    }
+
+    /* Нижняя панель навигации */
+    .pres-footer {
+      position: fixed;
+      bottom: 18px;
+      left: 24px;
+      right: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .pres-shortcuts {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .key-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      padding: 2px 6px;
+      color: var(--text-muted);
+    }
+
+    .pres-nav-cluster {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .pres-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      background: rgba(14, 20, 34, 0.8);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-arrow-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(18, 25, 42, 0.85);
+      border: 1px solid var(--border);
+      color: #FFFFFF;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-arrow-btn:hover {
+      background: var(--primary);
+      color: #070A11;
+      border-color: var(--primary);
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+
+    .nav-arrow-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Модальное окно обзорной сетки всех слайдов (Overview Grid) */
+    .overview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 9, 16, 0.94);
+      backdrop-filter: blur(14px);
+      z-index: 200;
+      padding: 50px 40px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+    }
+
+    .overview-modal.open {
+      display: flex;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 24px;
+    }
+
+    .overview-thumb {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .overview-thumb:hover, .overview-thumb.active {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 189, 125, 0.3);
+    }
+
+    .overview-thumb-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .overview-thumb-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.1rem;
+      color: #FFFFFF;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .cards-grid-3, .cards-grid-4, .diploma-pres-row {
+        grid-template-columns: 1fr;
+      }
+      .slide-title { font-size: 2.2rem; }
+      .slide { padding: 60px 20px 70px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Фон -->
+  <div class="bg-canvas"></div>
+  <div class="bg-grid"></div>
+
+  <!-- Верхний индикатор прогресса -->
+  <div id="topProgressBar" class="top-progress-bar"></div>
+
+  <!-- Хедер презентации -->
+  <header class="pres-header">
+    <a href="index.html" class="pres-brand" title="Вернуться на сайт">
+      <div class="pres-logo-badge">◈</div>
+      <div class="pres-title-wrap">
+        <span class="pres-title-text">ЛИЦЕЙСКИЙ РЕЕСТР ДОСТИЖЕНИЙ</span>
+        <span class="pres-subtitle-text">ХАКАТОН 2026 • PERSPECTIVE ECOSYSTEM</span>
+      </div>
+    </a>
+
+    <div class="pres-controls-top">
+      <div id="pitchTimer" class="pres-timer" title="Таймер выступления (нажмите для сброса)" onclick="resetTimer()">
+        ⏱ <span id="timerDigits">00:00</span>
+      </div>
+      <button class="pres-pill-btn" onclick="toggleOverview()" title="Сетка всех слайдов (Esc)">
+        <span>▦</span><span>Слайды</span>
+      </button>
+      <button class="pres-pill-btn" onclick="toggleFullScreen()" title="Полноэкранный режим (F)">
+        <span>⛶</span><span>Фуллскрин</span>
+      </button>
+      <a href="Лицейский_Реестр_Достижений_Презентация.pptx" download class="pres-pill-btn" style="border-color:var(--gold); color:var(--gold);" title="Скачать PowerPoint презентацию">
+        <span>📥</span><span>PPTX</span>
+      </a>
+      <a href="index.html" class="pres-pill-btn" style="border-color:var(--primary); color:var(--primary);">
+        <span>🌐</span><span>На сайт →</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- СЛАЙДЫ -->
+  <main class="slides-wrapper">
+
+    <!-- ==================== СЛАЙД 1: ТИТУЛЬНЫЙ ==================== -->
+    <section class="slide active" data-slide="1">
+      <div class="slide-inner">
+        <div class="slide-tag">[ 01 // HACKATHON PITCH 2026 ]</div>
+        <h1 class="slide-title">
+          ЦИФРОВОЙ РЕЕСТР ДОСТИЖЕНИЙ<br>
+          <span class="lime">& TELEGRAM-ШЛЮЗ @Hobbits22_bot</span>
+        </h1>
+        <p class="slide-desc">
+          Единая цифровая платформа лицейского олимпиадного движения: автоматический учёт побед, сквозной рейтинг, официальные дипломы с SHA-256 и мобильный ассистент.
+        </p>
+
+        <div class="cards-grid-4">
+          <div class="metric-hero-box">
+            <div class="metric-hero-num">320+</div>
+            <div class="metric-hero-label">Наград в базе</div>
+            <div class="metric-hero-sub">Подтверждено завучами</div>
+          </div>
+          <div class="metric-hero-box">
+            <div class="metric-hero-num" style="color:var(--cyan);">100%</div>
+            <div class="metric-hero-label">Синхронизация</div>
+            <div class="metric-hero-sub">Сайт ⟷ Telegram-бот</div>
+          </div>
+          <div class="metric-hero-box">
+            <div class="metric-hero-num" style="color:var(--gold);">SHA</div>
+            <div class="metric-hero-label">Крипто-хэш</div>
+            <div class="metric-hero-sub">Защита от подделок</div>
+          </div>
+          <div class="metric-hero-box">
+            <div class="metric-hero-num" style="color:var(--violet);">5 мин</div>
+            <div class="metric-hero-label">Время верификации</div>
+            <div class="metric-hero-sub">Вместо дней рутины</div>
+          </div>
+        </div>
+
+        <div class="slide-cta-row">
+          <button class="btn-pres-action primary" onclick="nextSlide()">Начать презентацию →</button>
+          <a href="rating.html" target="_blank" class="btn-pres-action secondary">🏆 Открыть живой рейтинг</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== СЛАЙД 2: ПРОБЛЕМА ==================== -->
+    <section class="slide" data-slide="2">
+      <div class="slide-inner">
+        <div class="slide-tag pink">[ 02 // PROBLEM STATEMENT ]</div>
+        <h2 class="slide-title">
+          С ЧЕМ СТАЛКИВАЮТСЯ ШКОЛЫ И ЛИЦЕИ<br>
+          <span style="color:var(--pink);">БЕЗ ЕДИНОГО РЕЕСТРА?</span>
+        </h2>
+        <p class="slide-desc">
+          Олимпиадное портфолио формируется годами, но текущие инструменты учёта устарели на 15 лет.
+        </p>
+
+        <div class="cards-grid-3">
+          <div class="feature-card pink">
+            <div class="card-icon">📂</div>
+            <h3 class="card-title">Хаос и потерянные сканы</h3>
+            <p class="card-text">
+              Грамоты пересылаются в мессенджерах родителями и учениками, теряются на флешках и в почтах, не доходя до официального портфолио.
+            </p>
+          </div>
+          <div class="feature-card pink">
+            <div class="card-icon">📊</div>
+            <h3 class="card-title">Excel-рутина завучей</h3>
+            <p class="card-text">
+              Методисты вручную сводят десятки таблиц, вручную высчитывают баллы и часами готовят списки к стипендиальным комитетам.
+            </p>
+          </div>
+          <div class="feature-card pink">
+            <div class="card-icon">🔍</div>
+            <h3 class="card-title">Непрозрачный рейтинг</h3>
+            <p class="card-text">
+              Лицеисты не видят свои текущие баллы в реальном времени, критерии начисления вызывают споры, а мотивация падает.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== СЛАЙД 3: РЕШЕНИЕ ==================== -->
+    <section class="slide" data-slide="3">
+      <div class="slide-inner">
+        <div class="slide-tag">[ 03 // OUR SOLUTION ]</div>
+        <h2 class="slide-title">
+          НАШЕ РЕШЕНИЕ: СВЯЗАННАЯ ЭКОСИСТЕМА<br>
+          <span class="lime">WEB-ПОРТАЛ + TELEGRAM-БОТ</span>
+        </h2>
+        <p class="slide-desc">
+          Полная автоматизация жизненного цикла достижения: от фотографии диплома со смартфона до автоматического приказа и верификации.
+        </p>
+
+        <div class="cards-grid-3">
+          <div class="feature-card">
+            <div class="card-icon">🤖</div>
+            <h3 class="card-title">Telegram-бот @Hobbits22_bot</h3>
+            <p class="card-text">
+              Подача заявок за 30 секунд: ученик выбирает предмет, прикрепляет скан и сразу видит статус рассмотрения и свои баллы.
+            </p>
+            <div class="code-pill">aiogram • Live Polling • Inline UI</div>
+          </div>
+
+          <div class="feature-card cyan">
+            <div class="card-icon">🌐</div>
+            <h3 class="card-title">Кабинеты ученика и завуча</h3>
+            <p class="card-text">
+              Завуч в один клик утверждает дипломы, сайт пересчитывает рейтинг, генерирует электронные приказы и ведёт архив.
+            </p>
+            <div class="code-pill">Dark Spatial UI • Контекстные окна</div>
+          </div>
+
+          <div class="feature-card gold">
+            <div class="card-icon">📜</div>
+            <h3 class="card-title">Крипто-дипломы SHA-256</h3>
+            <p class="card-text">
+              Генерация официальных наградных документов высокого разрешения с золотым тиснением и постоянным хэш-ключом подлинности.
+            </p>
+            <div class="code-pill">Canvas API • Python PIL • SHA-256</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== СЛАЙД 4: АРХИТЕКТУРА И СИНХРОНИЗАЦИЯ ==================== -->
+    <section class="slide" data-slide="4">
+      <div class="slide-inner">
+        <div class="slide-tag cyan">[ 04 // ARCHITECTURE & CROSS-DEVICE SYNC ]</div>
+        <h2 class="slide-title">
+          ОНЛАЙН ДЛЯ ВСЕХ УСТРОЙСТВ:<br>
+          <span class="cyan">РЕАЛТАЙМ НА GITHUB PAGES & МОБИЛЬНЫХ</span>
+        </h2>
+        <p class="slide-desc">
+          Сайт хостится статически через GitHub Pages, но работает как полноценное облачное приложение: любые новые аккаунты и дипломы сразу видны на телефонах и компьютерах других пользователей.
+        </p>
+
+        <div class="cards-grid-2">
+          <div class="feature-card cyan">
+            <h3 class="card-title">🌐 Кросс-девайс Cloud Hub (GitHub Pages)</h3>
+            <p class="card-text">
+              Умный алгоритм <b>Smart Merge</b> и защищённый CORS Key-Value шлюз объединяют данные с разных устройств в реальном времени. Статус в шапке <b>🟢 ОНЛАЙН (GITHUB CLOUD)</b>.
+            </p>
+            <ul style="margin-top:14px; padding-left:18px; color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
+              <li>Ученик регистрируется со смартфона → аккаунт сразу виден на ноутбуке завуча</li>
+              <li>Подача диплома с любого устройства мгновенно пересчитывает общелицейский рейтинг</li>
+              <li>Многопоточный BroadcastChannel для мгновенной синхронизации соседних вкладок</li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <h3 class="card-title">🤖 Единая связка с Telegram-ботом</h3>
+            <p class="card-text">
+              Сквозная SQLite-архитектура с зеркалированием в JSON и поддержкой удалённого API.
+            </p>
+            <div style="background:rgba(0,0,0,0.5); border-radius:10px; padding:14px; margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#A7F3D0;">
+              CLOUD  https://kvdb.io/.../lyceum_db • Реалтайм шлюз<br>
+              GET    /api/db • Получение единой базы пользователей<br>
+              POST   /api/achievements • Мгновенная подача диплома<br>
+              POLL   Каждые 2.5 сек • Бесшовное обновление интерфейса
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== СЛАЙД 5: ДИПЛОМЫ ==================== -->
+    <section class="slide" data-slide="5">
+      <div class="slide-inner">
+        <div class="slide-tag gold">[ 05 // CREDENTIALS & SECURITY ]</div>
+        <h2 class="slide-title">
+          ОФИЦИАЛЬНЫЕ ДИПЛОМЫ НОВОГО ПОКОЛЕНИЯ<br>
+          <span class="gold">ПРЕМИАЛЬНЫЙ ДИЗАЙН & КРИПТО-ХЭШ</span>
+        </h2>
+        <p class="slide-desc">
+          Разработан просторный представительский сертификат: динамичные изгибы (swoosh), золотая медаль с лавровым венком и цифровая верификация.
+        </p>
+
+        <div class="diploma-pres-row">
+          <div class="diploma-pres-card">
+            <img src="assets/diplomas/diploma_winner.png" alt="Победитель">
+            <div class="diploma-pres-body">
+              <span class="diploma-pres-rank">🥇 1 МЕСТО // ПОБЕДИТЕЛЬ</span>
+              <h4 class="diploma-pres-title">GOLD EDITION</h4>
+              <p style="font-size:0.8rem; color:var(--text-muted);">Изумрудно-золотая палитра для победителей финалов и ВсОШ.</p>
+            </div>
+          </div>
+
+          <div class="diploma-pres-card">
+            <img src="assets/diplomas/diploma_prize.png" alt="Призёр">
+            <div class="diploma-pres-body">
+              <span class="diploma-pres-rank" style="color:var(--cyan);">🥈 2–3 МЕСТО // ПРИЗЁР</span>
+              <h4 class="diploma-pres-title">SILVER EDITION</h4>
+              <p style="font-size:0.8rem; color:var(--text-muted);">Платиново-циановая гамма для призёров олимпиад.</p>
+            </div>
+          </div>
+
+          <div class="diploma-pres-card">
+            <img src="assets/diplomas/diploma_participant.png" alt="Участник">
+            <div class="diploma-pres-body">
+              <span class="diploma-pres-rank" style="color:var(--violet);">📜 СЕРТИФИКАТ УЧАСТНИКА</span>
+              <h4 class="diploma-pres-title">BRONZE EDITION</h4>
+              <p style="font-size:0.8rem; color:var(--text-muted);">Фиолетово-бронзовый стиль для участников акселераторов.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== СЛАЙД 6: АФИША И ИНТЕРАКТИВ ==================== -->
+    <section class="slide" data-slide="6">
+      <div class="slide-inner">
+        <div class="slide-tag violet">[ 06 // USER EXPERIENCE & EVENTS ]</div>
+        <h2 class="slide-title">
+          АФИША МЕРОПРИЯТИЙ & UX ДЕТАЛИ:<br>
+          <span class="violet">ОТ АРОЧНОГО ПОРТАЛА ДО 3D-ПЕРЕВЕСА</span>
+        </h2>
+        <p class="slide-desc">
+          Современный геймифицированный интерфейс, привлекающий старшеклассников к олимпиадному треку.
+        </p>
+
+        <div class="cards-grid-3">
+          <div class="feature-card violet">
+            <div class="card-icon">📅</div>
+            <h3 class="card-title">Афиша для админов</h3>
+            <p class="card-text">
+              Завучи публикуют карточки хакатонов и соревнований с баллами и быстрой ссылкой на регистрацию.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="card-icon">🌀</div>
+            <h3 class="card-title">Арочный портал пасхалок</h3>
+            <p class="card-text">
+              Бегущие строки с забавными пасхалками лицеистов («Кот Шрёдингера», «Дейкстра до столовой») и плавающими пилюлями.
+            </p>
+          </div>
+
+          <div class="feature-card cyan">
+            <div class="card-icon">🎴</div>
+            <h3 class="card-title">Физический 3D-перевес</h3>
+            <p class="card-text">
+              Карточки реалистично наклоняются при движении курсора, а контекстные модальные окна открываются с мягким фоновым размытием.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== СЛАЙД 7: ЭФФЕКТ И МЕТРИКИ ==================== -->
+    <section class="slide" data-slide="7">
+      <div class="slide-inner">
+        <div class="slide-tag">[ 07 // IMPACT & VALUE ]</div>
+        <h2 class="slide-title">
+          СОЦИАЛЬНЫЙ ЭФФЕКТ ДЛЯ ЛИЦЕЯ:<br>
+          <span class="lime">ЦИФРЫ, КОТОРЫЕ ГОВОРЯТ САМИ ЗА СЕБЯ</span>
+        </h2>
+        <p class="slide-desc">
+          Внедрение платформы решает задачи администрации, учеников и их родителей на качественно новом уровне.
+        </p>
+
+        <div class="cards-grid-4">
+          <div class="feature-card">
+            <div class="metric-hero-num" style="font-size:2.6rem;">0%</div>
+            <h4 class="card-title" style="font-size:1.05rem;">Потерь документов</h4>
+            <p class="card-text" style="font-size:0.82rem;">Все сканы и метаданные привязаны к профилю ученика навсегда.</p>
+          </div>
+
+          <div class="feature-card cyan">
+            <div class="metric-hero-num" style="font-size:2.6rem; color:var(--cyan);">-40 ч</div>
+            <h4 class="card-title" style="font-size:1.05rem;">Экономии в семестр</h4>
+            <p class="card-text" style="font-size:0.82rem;">Автоматическое сведение отчётности и стипендиальных таблиц.</p>
+          </div>
+
+          <div class="feature-card gold">
+            <div class="metric-hero-num" style="font-size:2.6rem; color:var(--gold);">100%</div>
+            <h4 class="card-title" style="font-size:1.05rem;">Прозрачность</h4>
+            <p class="card-text" style="font-size:0.82rem;">Каждый балл подкреплён ссылкой на проверенный приказ.</p>
+          </div>
+
+          <div class="feature-card violet">
+            <div class="metric-hero-num" style="font-size:2.6rem; color:var(--violet);">+35%</div>
+            <h4 class="card-title" style="font-size:1.05rem;">Вовлечённость</h4>
+            <p class="card-text" style="font-size:0.82rem;">Соревновательный дух открытого рейтинга стимулирует участие в олимпиадах.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== СЛАЙД 8: ДОРОЖНАЯ КАРТА ==================== -->
+    <section class="slide" data-slide="8">
+      <div class="slide-inner">
+        <div class="slide-tag cyan">[ 08 // ROADMAP & FUTURE ]</div>
+        <h2 class="slide-title">
+          ПЛАНЫ РАЗВИТИЯ ПРОЕКТА:<br>
+          <span class="cyan">ОТ ОДНОГО ЛИЦЕЯ К РЕГИОНУ</span>
+        </h2>
+        <p class="slide-desc">
+          Готовая модульная архитектура позволяет масштабировать решение на городской и региональный уровень.
+        </p>
+
+        <div class="cards-grid-3">
+          <div class="feature-card">
+            <div class="card-icon">🧠</div>
+            <h3 class="card-title">Этап 1: ИИ-рекомендации</h3>
+            <p class="card-text">
+              Нейросетевой подбор олимпиад под профиль ученика на основе его прошлых побед и слабых тем.
+            </p>
+          </div>
+
+          <div class="feature-card cyan">
+            <div class="card-icon">🏛️</div>
+            <h3 class="card-title">Этап 2: Интеграция с вузами</h3>
+            <p class="card-text">
+              Прямой экспорт верифицированного крипто-портфолио в приёмные комиссии ведущих университетов.
+            </p>
+          </div>
+
+          <div class="feature-card gold">
+            <div class="card-icon">🏙️</div>
+            <h3 class="card-title">Этап 3: Мультишкольность</h3>
+            <p class="card-text">
+              SaaS-платформа для всех общеобразовательных учреждений города с единым межшкольным кубком.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== СЛАЙД 9: ЗАКЛЮЧЕНИЕ / ДЕМО ==================== -->
+    <section class="slide" data-slide="9">
+      <div class="slide-inner" style="text-align:center; align-items:center;">
+        <div class="slide-tag">[ 09 // CONCLUSION & LIVE DEMO ]</div>
+        <h2 class="slide-title" style="font-size:3.6rem;">
+          ГОТОВЫ ОТВЕТИТЬ НА ВАШИ ВОПРОСЫ!<br>
+          <span class="lime">ПЕРЕХОДИМ К ЖИВОМУ ДЕМО</span>
+        </h2>
+        <p class="slide-desc" style="margin:0 auto 36px; text-align:center;">
+          Лицейский реестр достижений — прозрачное будущее академического признания уже сегодня.
+        </p>
+
+        <div class="slide-cta-row" style="justify-content:center;">
+          <a href="index.html" class="btn-pres-action primary">🌐 Открыть Главную страницу</a>
+          <a href="rating.html" class="btn-pres-action secondary">🏆 Посмотреть Рейтинг</a>
+          <a href="https://t.me/Hobbits22_bot" target="_blank" class="btn-pres-action secondary">🤖 Запустить @Hobbits22_bot</a>
+        </div>
+
+        <div style="margin-top:40px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; color:var(--text-dim);">
+          МБОУ «Инженерный лицей» • Команда разработчиков 2026
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Футер презентации с навигацией -->
+  <footer class="pres-footer">
+    <div class="pres-shortcuts">
+      <span>Навигация: <span class="key-badge">←</span> <span class="key-badge">→</span> или <span class="key-badge">Space</span></span>
+      <span>Сетка: <span class="key-badge">Esc</span></span>
+      <span>Фуллскрин: <span class="key-badge">F</span></span>
+    </div>
+
+    <div class="pres-nav-cluster">
+      <button id="prevBtn" class="nav-arrow-btn" onclick="prevSlide()" title="Предыдущий слайд (←)">←</button>
+      <div id="slideCounter" class="pres-counter">01 / 09</div>
+      <button id="nextBtn" class="nav-arrow-btn" onclick="nextSlide()" title="Следующий слайд (→)">→</button>
+    </div>
+  </footer>
+
+  <!-- Модальное окно сетки слайдов (Overview Grid) -->
+  <div id="overviewModal" class="overview-modal" onclick="closeOverviewOnBackdrop(event)">
+    <div style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:1200px;">
+      <h3 style="font-family:'Oswald',sans-serif; font-size:1.6rem; color:#fff;">ОБЗОР ВСЕХ СЛАЙДОВ</h3>
+      <button class="pres-pill-btn" onclick="toggleOverview()">✕ Закрыть</button>
+    </div>
+    <div id="overviewGrid" class="overview-grid"></div>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+
+    const counter = document.getElementById('slideCounter');
+    const progressBar = document.getElementById('topProgressBar');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const overviewModal = document.getElementById('overviewModal');
+    const overviewGrid = document.getElementById('overviewGrid');
+
+    // Инициализация
+    function updateSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === index);
+      });
+
+      currentSlide = index;
+
+      // Обновляем счётчик
+      const curNum = (currentSlide + 1).toString().padStart(2, '0');
+      const totNum = totalSlides.toString().padStart(2, '0');
+      counter.textContent = `${curNum} / ${totNum}`;
+
+      // Прогресс бар
+      const progressPercent = ((currentSlide + 1) / totalSlides) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      // Кнопки
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === totalSlides - 1;
+
+      // Обновляем миниатюры в обзоре
+      renderOverviewThumbs();
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        updateSlide(currentSlide + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        updateSlide(currentSlide - 1);
+      }
+    }
+
+    function goToSlide(index) {
+      updateSlide(index);
+      if (overviewModal.classList.contains('open')) {
+        toggleOverview();
+      }
+    }
+
+    // Клавиатурное управление
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        updateSlide(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        updateSlide(totalSlides - 1);
+      } else if (e.key === 'Escape') {
+        toggleOverview();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      }
+    });
+
+    // Полноэкранный режим
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Сетка всех слайдов
+    function renderOverviewThumbs() {
+      overviewGrid.innerHTML = slides.map((s, idx) => {
+        const titleEl = s.querySelector('.slide-title');
+        const titleText = titleEl ? titleEl.textContent.trim().replace(/\s+/g, ' ') : `Слайд ${idx + 1}`;
+        const isActive = idx === currentSlide ? 'active' : '';
+
+        return `
+          <div class="overview-thumb ${isActive}" onclick="goToSlide(${idx})">
+            <span class="overview-thumb-num">СЛАЙД ${(idx + 1).toString().padStart(2, '0')}</span>
+            <div class="overview-thumb-title">${titleText.slice(0, 48)}...</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleOverview() {
+      overviewModal.classList.toggle('open');
+      if (overviewModal.classList.contains('open')) {
+        renderOverviewThumbs();
+      }
+    }
+
+    function closeOverviewOnBackdrop(e) {
+      if (e.target === overviewModal) {
+        toggleOverview();
+      }
+    }
+
+    // Таймер питча выступления
+    let timerSeconds = 0;
+    let timerInterval = setInterval(() => {
+      timerSeconds++;
+      const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+      const s = (timerSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('timerDigits').textContent = `${m}:${s}`;
+    }, 1000);
+
+    function resetTimer() {
+      timerSeconds = 0;
+      document.getElementById('timerDigits').textContent = '00:00';
+    }
+
+    // Инициализация первого слайда
+    updateSlide(0);
+  </script>
+</body>
+</html>

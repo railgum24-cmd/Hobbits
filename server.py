@@ -48,6 +48,20 @@ def load_db():
         with open(DB_JSON_PATH, "r", encoding="utf-8") as f:
             return json.load(f)
 
+CLOUD_ROOM_URL = "https://kvdb.io/4y9n8p3dG7w8Zq9mX2bK/lyceum_portal_hackathon_2026"
+
+def push_to_cloud_async(data):
+    """Асинхронная отправка данных в общее облако (для GitHub Pages и мобильных устройств)"""
+    def _run():
+        try:
+            import urllib.request
+            payload = json.dumps(data, ensure_ascii=False).encode("utf-8")
+            req = urllib.request.Request(CLOUD_ROOM_URL, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+            urllib.request.urlopen(req, timeout=6)
+        except Exception:
+            pass
+    threading.Thread(target=_run, daemon=True).start()
+
 def save_db(data):
     with db_lock:
         # 1. Сохраняем в JSON
@@ -56,6 +70,9 @@ def save_db(data):
         
         # 2. Синхронизируем с SQLite для полной согласованности
         sync_to_sqlite(data)
+
+        # 3. Синхронизируем с облачным шлюзом (GitHub Pages)
+        push_to_cloud_async(data)
 
 def sync_to_sqlite(data):
     try:

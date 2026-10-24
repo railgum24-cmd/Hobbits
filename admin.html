@@ -23,20 +23,24 @@
     </span>
   </div>
   <div class="top-right">
-    <div id="adminSyncBadge" class="sync-status-pill sync-online" title="Статус подключения к Telegram-боту и единой базе">
+    <div id="adminSyncBadge" class="sync-status-pill sync-online" onclick="Storage.openSyncModal()" title="Синхронизация между устройствами (Онлайн) • Нажмите для настроек" style="cursor:pointer;">
       БОТ ПОДКЛЮЧЁН
     </div>
     <button onclick="forceAdminSync()" class="top-nav-btn" title="Принудительно синхронизировать с ботом">
       <span>🔄</span>
       <span>Синхронизировать</span>
     </button>
+    <a href="presentation.html" class="top-nav-btn" style="color:var(--gold); border-color:rgba(245,158,11,0.4);">
+      <span>📊</span>
+      <span>Презентация</span>
+    </a>
     <a href="rating.html" class="top-nav-btn">
       <span>🏆</span>
       <span>Общелицейский рейтинг</span>
     </a>
-    <a href="https://t.me/HobbitBot" target="_blank" class="top-nav-btn">
+    <a href="https://t.me/Hobbits22_bot" target="_blank" class="top-nav-btn">
       <span>🤖</span>
-      <span>@HobbitBot</span>
+      <span>@Hobbits22_bot</span>
     </a>
     <button onclick="confirmReset()" class="top-nav-btn warning">
       <span>↺</span>
@@ -201,7 +205,7 @@
       <div>
         <div class="section-tag">[ АКАДЕМИЧЕСКАЯ ЭКСПЕРТИЗА ]</div>
         <h2>ОЧЕРЕДЬ ВЕРИФИКАЦИИ ДИПЛОМОВ</h2>
-        <p>Заявки лицеистов, поданные через сайт и Telegram-бот @HobbitBot:</p>
+        <p>Заявки лицеистов, поданные через сайт и Telegram-бот @Hobbits22_bot:</p>
       </div>
       <button class="context-modal-close" onclick="closeModal('modalPending')">×</button>
     </div>
@@ -434,7 +438,7 @@
         <div class="form-grid" style="margin-bottom:12px;">
           <div>
             <label for="eventRegLink">Ссылка на регистрацию / Подробнее</label>
-            <input id="eventRegLink" placeholder="https://t.me/HobbitBot или сайт состязания">
+            <input id="eventRegLink" placeholder="https://t.me/Hobbits22_bot или сайт состязания">
           </div>
           <div>
             <label for="eventImgUrl">Ссылка на баннер / картинку (необязательно)</label>
