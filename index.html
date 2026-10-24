@@ -3,92 +3,557 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Портал достижений лицея</title>
-  <!-- Подключаем стили -->
+  <title>Портал достижений лицея — Официальный реестр</title>
+  <!-- Стили платформы (Perspective Design System) -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="login">
 
-  <main>
-    <div class="card">
-      <div style="text-align:center;font-size:2.2rem;margin-bottom:6px">🏛️</div>
-      <!-- Заголовок портала -->
-      <h1>Портал достижений лицея</h1>
-      <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:0 0 16px;">Система учёта успехов по физике, математике и IT</p>
-
-      <!-- Область для отображения ошибок -->
-      <div id="error" class="error" hidden></div>
-
-      <!-- ===== Форма входа ===== -->
-      <form id="loginForm" onsubmit="return doLogin()">
-        <label for="loginLogin">Логин</label>
-        <input type="text" id="loginLogin" placeholder="Введите логин" required>
-
-        <label for="loginPassword">Пароль</label>
-        <input type="password" id="loginPassword" placeholder="Введите пароль" required>
-
-        <button type="submit">Войти</button>
-
-        <!-- Переключатель на форму регистрации -->
-        <p class="toggle-link">
-          Нет аккаунта?
-          <a href="#" onclick="toggle(); return false;">Создать аккаунт</a>
-        </p>
-      </form>
-
-      <!-- ===== Форма регистрации (скрыта по умолчанию) ===== -->
-      <form id="registerForm" onsubmit="return doRegister()" hidden>
-        <label for="regName">ФИО</label>
-        <input type="text" id="regName" placeholder="Иванов Иван Иванович" required>
-
-        <label for="regClass">Класс</label>
-        <input type="text" id="regClass" placeholder="10А" required>
-
-        <label for="regLogin">Логин</label>
-        <input type="text" id="regLogin" placeholder="Придумайте логин" required>
-
-        <label for="regPassword">Пароль</label>
-        <input type="password" id="regPassword" placeholder="Придумайте пароль" required>
-
-        <button type="submit">Зарегистрироваться</button>
-
-        <!-- Переключатель на форму входа -->
-        <p class="toggle-link">
-          Уже есть аккаунт?
-          <a href="#" onclick="toggle(); return false;">Войти</a>
-        </p>
-      </form>
+  <!-- =================================================================
+       ВЕРХНЯЯ СТРОКА СТАТУСА ПОРТАЛА (PERSPECTIVE SYSTEM BAR)
+       ================================================================= -->
+  <header class="landing-topbar">
+    <div class="landing-topbar-left">
+      <div class="brand-badge">
+        <span class="dot"></span>
+        <span>ПОРТАЛ ДОСТИЖЕНИЙ ЛИЦЕЯ</span>
+      </div>
+      <div class="topbar-meta">
+        <span class="badge">[ V2.4 PERSPECTIVE ]</span>
+        <span>2025/2026 УЧ. ГОД</span>
+        <span style="color:var(--text-subtle)">•</span>
+        <span>ИНЖЕНЕРНО-ТЕХНИЧЕСКИЙ РЕГИСТР</span>
+      </div>
     </div>
+    <div class="landing-topbar-right">
+      <a href="rating.html" class="topbar-link highlight">
+        <span>🏆</span>
+        <span>Общелицейский рейтинг</span>
+      </a>
+      <a href="#events" class="topbar-link">
+        <span>📢</span>
+        <span>Афиша событий</span>
+      </a>
+      <a href="#diplomas" class="topbar-link">
+        <span>📜</span>
+        <span>Дипломы</span>
+      </a>
+      <a href="#auth" class="topbar-link">
+        <span>🔑</span>
+        <span>Вход в систему</span>
+      </a>
+      <a href="https://t.me/HobbitBot" target="_blank" class="topbar-link">
+        <span>🤖</span>
+        <span>Telegram-бот @HobbitBot</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- =================================================================
+       ОСНОВНОЙ РЕДАКЦИОННЫЙ ПРОСТОРНЫЙ КОНТЕЙНЕР
+       ================================================================= -->
+  <main class="landing-wrap">
+
+    <!-- ── ГЕРОЙСКИЙ БЛОК: ЗАГОЛОВОК + ЛОГИН В САМЫЙ ВЕРХ ── -->
+    <section class="hero-block">
+      
+      <div class="hero-top-grid">
+        
+        <!-- ЛЕВАЯ ЧАСТЬ: БОЛЬШОЙ ТЕКСТ И ОПИСАНИЕ -->
+        <div class="hero-intro">
+          <!-- Верхние технические теги -->
+          <div class="hero-tag-row">
+            <span class="hero-tag lime">◈ РЕГИСТР ЛИЦЕЯ</span>
+            <span class="hero-tag">[STEM-CORE]</span>
+            <span class="hero-tag">[SHA-256]</span>
+            <span class="hero-tag">[9–11 КЛАССЫ]</span>
+          </div>
+
+          <!-- Главный заголовок -->
+          <h1 class="hero-display-title">
+            РЕЕСТР ДОСТИЖЕНИЙ<br>
+            <span class="lime">ИНЖЕНЕРНОГО ЛИЦЕЯ</span>
+          </h1>
+
+          <p class="hero-lead">
+            Официальный учёт побед в олимпиадах, хакатонах и научных проектах. Мгновенная верификация завучами и сквозной рейтинг лицеистов.
+          </p>
+
+          <!-- Кнопки быстрого доступа -->
+          <div class="hero-actions">
+            <a href="rating.html" class="btn-hero-primary">
+              <span>🏆</span>
+              <span>Рейтинг лицея →</span>
+            </a>
+            <a href="#diplomas" class="btn-hero-secondary">
+              <span>📜</span>
+              <span>Дипломы</span>
+            </a>
+            <a href="https://t.me/HobbitBot" target="_blank" class="btn-hero-secondary">
+              <span>🤖</span>
+              <span>@HobbitBot ↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- ПРАВАЯ ЧАСТЬ: ЛОГИН И РЕГИСТРАЦИЯ В САМЫЙ ВЕРХ -->
+        <div id="auth" class="auth-panel">
+          
+          <!-- Переключатель Вход / Регистрация -->
+          <div class="auth-tabs">
+            <button id="tabLogin" class="auth-tab active" onclick="switchTab('login')">Вход в систему</button>
+            <button id="tabRegister" class="auth-tab" onclick="switchTab('register')">Регистрация</button>
+          </div>
+
+          <!-- Заголовок панели -->
+          <div class="auth-header">
+            <h2 id="authTitle">АВТОРИЗАЦИЯ</h2>
+            <p id="authSubtitle">Войдите под своей учётной записью лицеиста или завуча</p>
+          </div>
+
+          <!-- Блок ошибок -->
+          <div id="error" class="error" hidden></div>
+
+          <!-- ===== Форма входа ===== -->
+          <form id="loginForm" onsubmit="return doLogin()">
+            <div>
+              <label for="loginLogin">Логин</label>
+              <input type="text" id="loginLogin" placeholder="Логин (например, Rail)" required autocomplete="username">
+            </div>
+
+            <div>
+              <label for="loginPassword">Пароль</label>
+              <input type="password" id="loginPassword" placeholder="Пароль" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" style="margin-top:6px;">Войти в личный кабинет</button>
+          </form>
+
+          <!-- ===== Форма регистрации (скрыта по умолчанию) ===== -->
+          <form id="registerForm" onsubmit="return doRegister()" hidden>
+            <div>
+              <label for="regName">ФИО Ученика</label>
+              <input type="text" id="regName" placeholder="Иванов Иван Иванович" required>
+            </div>
+
+            <div>
+              <label for="regClass">Класс</label>
+              <input type="text" id="regClass" placeholder="9Б, 10А, 11Б..." required>
+            </div>
+
+            <div>
+              <label for="regLogin">Придумайте логин</label>
+              <input type="text" id="regLogin" placeholder="ivanov" required autocomplete="username">
+            </div>
+
+            <div>
+              <label for="regPassword">Придумайте пароль</label>
+              <input type="password" id="regPassword" placeholder="Минимум 4 символа" required autocomplete="new-password">
+            </div>
+
+            <button type="submit" style="margin-top:6px;">Зарегистрироваться</button>
+          </form>
+
+          <!-- Техническая подпись -->
+          <div class="auth-footer-note">
+            [ PERSPECTIVE STEM-REGISTRY • CRYPTOGRAPHIC AUDIT • VERIFIED 2026 ]
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Символьная строка (Perspective Spatial Ribbon) во всю ширину -->
+      <div class="symbol-strip">
+        <span class="sym">⌁</span> ФИЗИКА
+        <span class="sym">◈</span> МАТЕМАТИКА
+        <span class="sym">⌁</span> ИНФОРМАТИКА
+        <span class="sym">◈</span> РОБОТОТЕХНИКА
+        <span class="sym">⌁</span> ХАКАТОНЫ
+        <span class="sym">◈</span> НАУЧНЫЕ КОНФЕРЕНЦИИ
+        <span class="sym">⌁</span> СТИПЕНДИАЛЬНЫЙ РЕЙТИНГ
+        <span class="sym">◈</span> КРИПТО-ВАЛИДАЦИЯ
+        <span class="sym">⌁</span> TELEGRAM-ШЛЮЗ
+      </div>
+
+      <!-- ── КРУПНЫЕ СЧЁТЧИКИ И СТАТИСТИКА ПЛАТФОРМЫ ВО ВСЮ ШИРИНУ ── -->
+      <div class="landing-metrics">
+        <div class="metric-card">
+          <div class="metric-number">320+</div>
+          <div class="metric-label">НАГРАД В БАЗЕ</div>
+          <div class="metric-sub">Подтверждено методистами</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-number">18</div>
+          <div class="metric-label">ФЕДЕРАЛЬНЫХ ПОБЕД</div>
+          <div class="metric-sub">Финалы ВсОШ и НТИ</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-number">100%</div>
+          <div class="metric-label">ЦИФРОВЫХ ДИПЛОМОВ</div>
+          <div class="metric-sub">Хэш SHA-256 и верификация</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-number">5</div>
+          <div class="metric-label">ДИСЦИПЛИН</div>
+          <div class="metric-sub">Физика • Математика • IT</div>
+        </div>
+      </div>
+
+      <!-- ── ИНТЕРАКТИВНЫЙ АРЧ-ВИДЖЕТ С ПЕРЕТЕКАЮЩИМ ТЕКСТОМ И ПЛАВАЮЩИМИ БЕЙДЖАМИ (ПАСХАЛКИ) ── -->
+      <div class="portal-showcase-container">
+        
+        <!-- Искрящиеся звёздочки ✦ -->
+        <div class="sparkle-group">
+          <svg class="sparkle-star" width="38" height="38" viewBox="0 0 24 24">
+            <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/>
+          </svg>
+          <svg class="sparkle-star sub" width="22" height="22" viewBox="0 0 24 24">
+            <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/>
+          </svg>
+        </div>
+
+        <!-- Левая колонка: плавающие кнопки с физикой покачивания -->
+        <div class="floating-pills-col">
+          <a href="#events" class="floating-pill-btn">🏆 ОЛИМПИАДЫ</a>
+          <a href="#labs" class="floating-pill-btn">🚀 ХАКАТОНЫ & ИИ</a>
+          <a href="#diplomas" class="floating-pill-btn">📜 ДИПЛОМЫ SHA-256</a>
+          <a href="rating.html" class="floating-pill-btn">⭐ РЕЙТИНГ ЛИЦЕЯ</a>
+        </div>
+
+        <!-- Центрально-правая фигура: Арочный портал с непрерывно текущими строками тегов -->
+        <div class="arched-portal-frame" title="Нажмите на любой бейдж, чтобы активировать пасхалку!">
+          
+          <!-- Строка 1 (движение влево) -->
+          <div class="portal-marquee-row left">
+            <span class="portal-chip orange" onclick="triggerEasterEgg('ВсОШ 2026: +100 к поступлению!')">🏆 ВсОШ 2026</span>
+            <span class="portal-chip pink" onclick="triggerEasterEgg('🐱 Кот Шрёдингера одновременно занял 1-е и 2-е место!')">🐱 Кот Шрёдингера (призёр)</span>
+            <span class="portal-chip lime" onclick="triggerEasterEgg('⚡ Быстрее компилятора GCC!')">⚡ Спортивное прогромирование</span>
+            <span class="portal-chip cyan" onclick="triggerEasterEgg('🌌 Теория относительности проверена в 9Б классе!')">🌌 E = mc² + 50 баллов</span>
+            <span class="portal-chip violet" onclick="triggerEasterEgg('💡 Олимпиада Максвелла покорена!')">💡 Олимпиада Максвелла</span>
+            <!-- Дублирование для непрерывности -->
+            <span class="portal-chip orange" onclick="triggerEasterEgg('ВсОШ 2026: +100 к поступлению!')">🏆 ВсОШ 2026</span>
+            <span class="portal-chip pink" onclick="triggerEasterEgg('🐱 Кот Шрёдингера одновременно занял 1-е и 2-е место!')">🐱 Кот Шрёдингера (призёр)</span>
+            <span class="portal-chip lime" onclick="triggerEasterEgg('⚡ Быстрее компилятора GCC!')">⚡ Спортивное прогромирование</span>
+          </div>
+
+          <!-- Строка 2 (движение вправо) -->
+          <div class="portal-marquee-row right">
+            <span class="portal-chip cyan" onclick="triggerEasterEgg('💻 git push origin master --force (но аккуратно!)')">💻 git commit -m "диплом готов"</span>
+            <span class="portal-chip white" onclick="triggerEasterEgg('🤖 42 — Главный ответ Вселенной на все олимпиады!')">☕ 42 — ответ на всё</span>
+            <span class="portal-chip violet" onclick="triggerEasterEgg('🚀 Нейросеть обучена предсказывать победителей!')">🚀 Хакатон ИИ & Neuro</span>
+            <span class="portal-chip lime" onclick="triggerEasterEgg('🎯 М.В. Ломоносов гордится твоими баллами!')">🎯 Турнир Ломоносова</span>
+            <span class="portal-chip pink" onclick="triggerEasterEgg('🔥 100 баллов гарантировано практикой!')">🔥 100 баллов на ЕГЭ</span>
+            <!-- Дублирование -->
+            <span class="portal-chip cyan" onclick="triggerEasterEgg('💻 git push origin master --force!')">💻 git commit -m "диплом готов"</span>
+            <span class="portal-chip white" onclick="triggerEasterEgg('🤖 42 — Главный ответ Вселенной!')">☕ 42 — ответ на всё</span>
+          </div>
+
+          <!-- Строка 3 (движение влево) -->
+          <div class="portal-marquee-row left">
+            <span class="portal-chip lime" onclick="triggerEasterEgg('🤖 @HobbitBot: «Я зафиксировал твой рекорд в SQLite!»')">🤖 HobbitBot помнит всё</span>
+            <span class="portal-chip orange" onclick="triggerEasterEgg('👑 9Б — абсолютные чемпионы параллели!')">👑 9Б легенды лицея</span>
+            <span class="portal-chip cyan" onclick="triggerEasterEgg('✅ Методист и завуч подписали приказ без замечаний!')">✅ завуч одобряет ✓</span>
+            <span class="portal-chip pink" onclick="triggerEasterEgg('🧪 Квантовая запутанность зафиксирована!')">🧪 Квантовая оптика</span>
+            <span class="portal-chip violet" onclick="triggerEasterEgg('🌐 Web-реестр синхронизирован на 100%')">🌐 Web-реестр 2026</span>
+            <!-- Дублирование -->
+            <span class="portal-chip lime" onclick="triggerEasterEgg('🤖 @HobbitBot помнит всё!')">🤖 HobbitBot помнит всё</span>
+            <span class="portal-chip orange" onclick="triggerEasterEgg('👑 9Б — абсолютные чемпионы!')">👑 9Б легенды лицея</span>
+          </div>
+
+          <!-- Строка 4 (движение вправо) -->
+          <div class="portal-marquee-row right">
+            <span class="portal-chip pink" onclick="triggerEasterEgg('🍽️ Кратчайший путь через граф лицея: 12 секунд до пиццы!')">🍽️ Дейкстра до столовой</span>
+            <span class="portal-chip violet" onclick="triggerEasterEgg('✨ Это не баг, это незадокументированное преимущество!')">🐛 баг или фича?</span>
+            <span class="portal-chip cyan" onclick="triggerEasterEgg('🛡️ Хэш верифицирован: подделка невозможна!')">🛡️ SHA-256 крипто-печать</span>
+            <span class="portal-chip lime" onclick="triggerEasterEgg('🦾 Роботы уже собирают кубик Рубика за 0.4 сек!')">🦾 НТИ Робототехника</span>
+            <span class="portal-chip orange" onclick="triggerEasterEgg('⭐ Физтех ждёт победителей!')">⭐ Звёздный билет в МФТИ</span>
+            <!-- Дублирование -->
+            <span class="portal-chip pink" onclick="triggerEasterEgg('🍽️ Кратчайший путь до столовой найден!')">🍽️ Дейкстра до столовой</span>
+            <span class="portal-chip violet" onclick="triggerEasterEgg('✨ Это не баг, это фича!')">🐛 баг или фича?</span>
+          </div>
+
+          <!-- Строка 5 (движение влево) -->
+          <div class="portal-marquee-row left">
+            <span class="portal-chip white" onclick="triggerEasterEgg('⌨️ Главное — уверенный взгляд перед комиссией!')">⌨️ Ctrl+Z не спасёт на защите</span>
+            <span class="portal-chip orange" onclick="triggerEasterEgg('⏰ Дедлайн был вчера, но диплом сдан сегодня!')">⏰ Дедлайн был вчера</span>
+            <span class="portal-chip lime" onclick="triggerEasterEgg('🥇 1-е место — это наш лицейский стандарт!')">🥇 Первое место — наш стандарт</span>
+            <span class="portal-chip cyan" onclick="triggerEasterEgg('☕ Формула успеха: кофе + алгоритмы + настойчивость!')">☕ Кофеин и матан</span>
+            <!-- Дублирование -->
+            <span class="portal-chip white" onclick="triggerEasterEgg('⌨️ Уверенная защита!')">⌨️ Ctrl+Z не спасёт на защите</span>
+            <span class="portal-chip orange" onclick="triggerEasterEgg('⏰ Дедлайн побеждён!')">⏰ Дедлайн был вчера</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ── СЕКЦИЯ 01: ПРОФИЛЬНЫЕ НАПРАВЛЕНИЯ (ФОТО-ВИТРИНА) ВО ВСЮ ШИРИНУ ── -->
+    <section id="labs" class="landing-section">
+      <div class="section-header">
+        <div class="section-tag">[ 01 // STEM DISCIPLINE CORE ]</div>
+        <h2 class="section-title">ПРОФИЛЬНЫЕ ЛАБОРАТОРИИ И ОЛИМПИАДЫ</h2>
+        <p class="section-sub">
+          Ключевые инженерные лаборатории, научные наставники и подготовка к олимпиадам 1-го уровня.
+        </p>
+      </div>
+
+      <div class="photo-showcase">
+        
+        <!-- Карточка 1: Физика -->
+        <div class="photo-card" style="background-image: url('https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&w=800&q=80');">
+          <div class="photo-card-top">
+            <span class="photo-badge lime">[PHYS-LAB // 01]</span>
+            <div class="soundwave" title="Активность направления">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="photo-card-bottom">
+            <span class="photo-category">Физика & Квантовая оптика</span>
+            <h3 class="photo-title">ЛАБОРАТОРНЫЕ ПРАКТИКУМЫ</h3>
+            <span class="photo-meta">ВсОШ • Олимпиада Максвелла</span>
+          </div>
+        </div>
+
+        <!-- Карточка 2: Информатика & Кодинг -->
+        <div class="photo-card" style="background-image: url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80');">
+          <div class="photo-card-top">
+            <span class="photo-badge">[DEV-OLYMP // 02]</span>
+            <div class="soundwave" title="Активность направления">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="photo-card-bottom">
+            <span class="photo-category">Информатика & Алгоритмы</span>
+            <h3 class="photo-title">ОЛИМПИАДНОЕ IT & ХАКАТОНЫ</h3>
+            <span class="photo-meta">Спортивное кодирование • Разработка ПО</span>
+          </div>
+        </div>
+
+        <!-- Карточка 3: Математика -->
+        <div class="photo-card" style="background-image: url('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80');">
+          <div class="photo-card-top">
+            <span class="photo-badge lime">[MATH-CAD // 03]</span>
+            <div class="soundwave" title="Активность направления">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="photo-card-bottom">
+            <span class="photo-category">Математика & Моделирование</span>
+            <h3 class="photo-title">ПРИКЛАДНОЙ МАТАНАЛИЗ</h3>
+            <span class="photo-meta">Турнир Ломоносова • Теория графов</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── СЕКЦИЯ 02: ОФИЦИАЛЬНЫЕ ЭЛЕКТРОННЫЕ ДИПЛОМЫ ВО ВСЮ ШИРИНУ ── -->
+    <section id="diplomas" class="landing-section">
+      <div class="section-header">
+        <div class="section-tag">[ 02 // OFFICIAL CREDENTIALS & CERTIFICATES ]</div>
+        <h2 class="section-title">ОФИЦИАЛЬНЫЕ ЭЛЕКТРОННЫЕ ДИПЛОМЫ</h2>
+        <p class="section-sub">
+          Автоматическая генерация сертификатов с золотым тиснением и крипто-хэшем SHA-256 для портфолио и вузов.
+        </p>
+      </div>
+
+      <div class="diploma-gallery-grid">
+        
+        <!-- Диплом 1: Победитель -->
+        <div class="diploma-preview-card">
+          <img src="assets/diplomas/diploma_winner.png" alt="Диплом Победителя" loading="lazy">
+          <div class="desc">
+            <div>
+              <span class="badge" style="background:var(--primary-light); color:var(--primary); border-color:var(--primary-border);">
+                🏆 1 МЕСТО // ПОБЕДИТЕЛЬ
+              </span>
+              <h3 style="font-family:'Oswald',sans-serif; font-size:1.15rem; margin:10px 0 6px; color:#fff;">
+                ДИПЛОМ ПОБЕДИТЕЛЯ (GOLD)
+              </h3>
+              <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 12px; line-height:1.4;">
+                Победа в финалах и региональных этапах инженерных олимпиад и хакатонов.
+              </p>
+            </div>
+            <button class="btn btn-primary" onclick="downloadSampleDiploma('winner')" style="width:100%; justify-content:center;">
+              📥 Скачать образец PNG
+            </button>
+          </div>
+        </div>
+
+        <!-- Диплом 2: Призёр -->
+        <div class="diploma-preview-card">
+          <img src="assets/diplomas/diploma_prize.png" alt="Диплом Призёра" loading="lazy">
+          <div class="desc">
+            <div>
+              <span class="badge" style="background:rgba(59,130,246,0.15); color:#60a5fa; border-color:rgba(59,130,246,0.35);">
+                🥈 2–3 МЕСТО // ПРИЗЁР
+              </span>
+              <h3 style="font-family:'Oswald',sans-serif; font-size:1.15rem; margin:10px 0 6px; color:#fff;">
+                ДИПЛОМ ПРИЗЁРА (SILVER)
+              </h3>
+              <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 12px; line-height:1.4;">
+                Высокие результаты в лицейских и региональных профильных состязаниях.
+              </p>
+            </div>
+            <button class="btn btn-secondary" onclick="downloadSampleDiploma('prize')" style="width:100%; justify-content:center;">
+              📥 Скачать образец PNG
+            </button>
+          </div>
+        </div>
+
+        <!-- Диплом 3: Участник -->
+        <div class="diploma-preview-card">
+          <img src="assets/diplomas/diploma_participant.png" alt="Сертификат Участника" loading="lazy">
+          <div class="desc">
+            <div>
+              <span class="badge" style="background:rgba(139,92,246,0.15); color:#a78bfa; border-color:rgba(139,92,246,0.35);">
+                📜 СЕРТИФИКАТ УЧАСТНИКА
+              </span>
+              <h3 style="font-family:'Oswald',sans-serif; font-size:1.15rem; margin:10px 0 6px; color:#fff;">
+                СЕРТИФИКАТ УЧАСТНИКА
+              </h3>
+              <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 12px; line-height:1.4;">
+                Успешное прохождение отборочных туров и лицейских хакатон-акселераторов.
+              </p>
+            </div>
+            <button class="btn btn-secondary" onclick="downloadSampleDiploma('participant')" style="width:100%; justify-content:center;">
+              📥 Скачать образец PNG
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── СЕКЦИЯ: АФИША ОЛИМПИАД И МЕРОПРИЯТИЙ ЛИЦЕЯ ── -->
+    <section id="events" class="landing-section">
+      <div class="section-header">
+        <div class="section-tag">[ АКАДЕМИЧЕСКИЙ КАЛЕНДАРЬ // EVENTS ]</div>
+        <h2 class="section-title">АФИША ОЛИМПИАД И МЕРОПРИЯТИЙ</h2>
+        <p class="section-sub">
+          Календарь олимпиад и хакатонов. Участвуйте и пополняйте лицейский реестр!
+        </p>
+      </div>
+
+      <div id="landingEventsGrid" class="events-grid"></div>
+    </section>
+
+    <!-- ── СЕКЦИЯ 03: АРХИТЕКТУРА И РЕГЛАМЕНТ ПРОВЕРКИ ВО ВСЮ ШИРИНУ ── -->
+    <section id="pillars" class="landing-section">
+      <div class="section-header">
+        <div class="section-tag">[ 03 // ARCHITECTURE & VERIFICATION ]</div>
+        <h2 class="section-title">АРХИТЕКТУРА И РЕГЛАМЕНТ ПРОВЕРКИ</h2>
+        <p class="section-sub">
+          Академический аудит, прозрачность начисления баллов и защита от подделок.
+        </p>
+      </div>
+
+      <div class="pillars-grid">
+        
+        <div class="pillar-card">
+          <div class="pillar-code">[01 // АВТОРИЗОВАННАЯ ПРОВЕРКА]</div>
+          <h4 class="pillar-title">ДВУХУРОВНЕВАЯ ВЕРИФИКАЦИЯ</h4>
+          <p class="pillar-text">
+            Проверка методистом или завучем с номером приказа и фиксацией в журнале аудита.
+          </p>
+        </div>
+
+        <div class="pillar-card">
+          <div class="pillar-code">[02 // ЗАЩИТА ОТ ПОДДЕЛОК]</div>
+          <h4 class="pillar-title">КРИПТО-ХЭШ ДИПЛОМА</h4>
+          <p class="pillar-text">
+            Неизменяемый хэш SHA-256 для моментальной проверки подлинности приемными комиссиями.
+          </p>
+        </div>
+
+        <div class="pillar-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div class="pillar-code">[03 // МОБИЛЬНЫЙ ШЛЮЗ]</div>
+            <img src="assets/bot_avatar.png" alt="HobbitBot" style="width:36px; height:36px; border-radius:50%; border:2px solid var(--primary); box-shadow:0 0 10px rgba(0,189,125,0.4); object-fit:cover;">
+          </div>
+          <h4 class="pillar-title">TELEGRAM-БОТ @HobbitBot</h4>
+          <p class="pillar-text">
+            Подача дипломов, проверка баллов и просмотр открытого рейтинга прямо со смартфона.
+          </p>
+        </div>
+
+        <div class="pillar-card">
+          <div class="pillar-code">[04 // ПРОЗРАЧНАЯ ШКАЛА]</div>
+          <h4 class="pillar-title">СКВОЗНОЙ РАСЧЁТ БАЛЛОВ</h4>
+          <p class="pillar-text">
+            Авторасчёт баллов по официальному регламенту на академическую стипендию и путёвки.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 
-  <!-- Подключаем скрипты в нужном порядке -->
+  <!-- =================================================================
+       ФУТЕР ПОРТАЛА (PERSPECTIVE FOOTER)
+       ================================================================= -->
+  <footer class="landing-footer">
+    <div>
+      <strong style="color:var(--text-main);">МБОУ «Инженерный лицей»</strong> • Реестр академических и олимпиадных достижений 2025/2026
+    </div>
+    <div>
+      Perspective Spatial UI • Криптографический протокол валидации
+    </div>
+    <div style="display:flex; gap:16px;">
+      <a href="rating.html" style="color:var(--primary); text-decoration:none;">Рейтинг</a>
+      <a href="https://t.me/HobbitBot" target="_blank" style="color:var(--text-muted); text-decoration:none;">Telegram-бот</a>
+      <a href="#" style="color:var(--text-subtle); text-decoration:none;">Наверх ↑</a>
+    </div>
+  </footer>
+
+  <!-- Подключение скриптов данных, API, дипломов, 3D-перевеса и анимаций -->
   <script src="data/seed.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/diploma.js"></script>
+  <script src="js/tilt.js"></script>
+  <script src="js/transitions.js"></script>
 
   <script>
     /**
-     * Переключает видимость форм входа и регистрации.
-     * Также скрывает сообщение об ошибке при переключении.
+     * Переключатель табов Вход / Регистрация
      */
-    function toggle() {
+    function switchTab(mode) {
       const loginForm    = document.getElementById('loginForm');
       const registerForm = document.getElementById('registerForm');
+      const tabLogin     = document.getElementById('tabLogin');
+      const tabRegister  = document.getElementById('tabRegister');
+      const title        = document.getElementById('authTitle');
+      const subtitle     = document.getElementById('authSubtitle');
       const errorBox     = document.getElementById('error');
 
-      // Переключаем видимость форм
-      loginForm.hidden    = !loginForm.hidden;
-      registerForm.hidden = !registerForm.hidden;
-
-      // Скрываем ошибку при переключении
       errorBox.hidden = true;
       errorBox.textContent = '';
+
+      if (mode === 'login') {
+        loginForm.hidden = false;
+        registerForm.hidden = true;
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+        title.textContent = 'АВТОРИЗАЦИЯ';
+        subtitle.textContent = 'Войдите под своей учётной записью лицеиста или завуча';
+      } else {
+        loginForm.hidden = true;
+        registerForm.hidden = false;
+        tabLogin.classList.remove('active');
+        tabRegister.classList.add('active');
+        title.textContent = 'РЕГИСТРАЦИЯ';
+        subtitle.textContent = 'Создайте учётную запись для подачи дипломов в реестр';
+      }
     }
 
     /**
-     * Показывает сообщение об ошибке пользователю.
-     * @param {string} msg — текст ошибки
+     * Показывает ошибку
      */
     function showError(msg) {
       const errorBox = document.getElementById('error');
@@ -97,38 +562,35 @@
     }
 
     /**
-     * Обработчик входа.
-     * Считывает логин и пароль, вызывает Auth.login().
-     * @returns {false} — предотвращает отправку формы
+     * Обработка входа с плавной портальной анимацией
      */
     function doLogin() {
       const login    = document.getElementById('loginLogin').value.trim();
       const password = document.getElementById('loginPassword').value;
+      const btn      = document.querySelector('#loginForm button[type="submit"]');
 
       try {
-        Auth.login(login, password);
-        // Auth.login сам перенаправляет на admin.html или student.html
+        const u = Auth.login(login, password, true);
+        const target = u.role === 'admin' ? 'admin.html' : 'student.html';
+        Transitions.portalNavigate(target, btn);
       } catch (e) {
-        showError(e.message || 'Ошибка входа');
+        showError(e.message || 'Неверный логин или пароль');
       }
 
       return false;
     }
 
     /**
-     * Обработчик регистрации.
-     * Создаёт нового пользователя через api.users.create(),
-     * затем выполняет автоматический вход.
-     * @returns {false} — предотвращает отправку формы
+     * Обработка регистрации с плавной анимацией
      */
     function doRegister() {
       const name     = document.getElementById('regName').value.trim();
       const cls      = document.getElementById('regClass').value.trim();
       const login    = document.getElementById('regLogin').value.trim();
       const password = document.getElementById('regPassword').value;
+      const btn      = document.querySelector('#registerForm button[type="submit"]');
 
       try {
-        // Создаём пользователя
         api.users.create({
           name:     name,
           class:    cls,
@@ -136,14 +598,139 @@
           password: password
         });
 
-        // Автоматический вход после регистрации
-        Auth.login(login, password);
+        // Мгновенный плавный вход после регистрации
+        const u = Auth.login(login, password, true);
+        Transitions.portalNavigate('student.html', btn);
       } catch (e) {
-        showError(e.message || 'Ошибка регистрации');
+        showError(e.message || 'Ошибка регистрации профиля');
       }
 
       return false;
     }
+
+    /**
+     * Скачивание образца диплома
+     */
+    function downloadSampleDiploma(resultType) {
+      const sampleNames = {
+        winner: 'Алексеев Даниил Андреевич',
+        prize: 'Смирнова Екатерина Михайловна',
+        participant: 'Новиков Михаил Сергеевич'
+      };
+      const sampleTitles = {
+        winner: 'Всероссийская олимпиада школьников по информатике',
+        prize: 'Региональный хакатон по прикладной робототехнике',
+        participant: 'Лицейский научно-технический турнир «Вектор 2026»'
+      };
+      const sampleCats = {
+        winner: 'informatics',
+        prize: 'project',
+        participant: 'physics'
+      };
+
+      DiplomaGenerator.download({
+        name: sampleNames[resultType] || 'Лицеист Образцов',
+        title: sampleTitles[resultType] || 'Инженерная олимпиада',
+        category: sampleCats[resultType] || 'informatics',
+        result: resultType,
+        date: new Date().toLocaleDateString('ru-RU')
+      });
+    }
+
+    /**
+     * Отрисовка афиш мероприятий лицея
+     */
+    function renderLandingEvents() {
+      const list = api.events.list();
+      const grid = document.getElementById("landingEventsGrid");
+      if (!grid) return;
+
+      grid.innerHTML = list.map(ev => {
+        const bannerStyle = ev.imageUrl ? `background-image:url('${ev.imageUrl}');` : '';
+        const hasImgClass = ev.imageUrl ? 'has-img' : '';
+        const regLink = ev.registrationLink || 'https://t.me/HobbitBot';
+
+        return `
+          <div class="event-poster-card" data-tilt>
+            <div class="event-poster-banner ${hasImgClass}" style="${bannerStyle}">
+              <span class="event-poster-level-top">${ev.level || 'Региональный'}</span>
+              <span class="event-poster-badge-top">${ev.badgeText || 'АФИША'}</span>
+            </div>
+            <div>
+              <h4 class="event-poster-title">${ev.title}</h4>
+              <div class="event-poster-meta">
+                <div class="event-poster-meta-item">
+                  <span>🗓</span>
+                  <span><b>Дата:</b> ${ev.date}</span>
+                </div>
+                <div class="event-poster-meta-item">
+                  <span>📍</span>
+                  <span><b>Место:</b> ${ev.place || 'Лицей'}</span>
+                </div>
+              </div>
+              <p class="event-poster-desc">${ev.description || 'Приглашаем лицеистов принять участие!'}</p>
+            </div>
+            <div class="event-poster-footer">
+              <span class="event-poster-points-tag">⭐ ${ev.pointsAward || '+20 б.'}</span>
+              <div class="event-poster-actions">
+                <a href="${regLink}" target="_blank" class="top-nav-btn primary" style="padding:4px 12px;font-size:0.75rem;">🔗 Участвовать</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (window.initTilt) window.initTilt();
+    }
+
+    /**
+     * Интерактивные пасхалки в арочном портале
+     */
+    function triggerEasterEgg(msg) {
+      // Создаём или находим тост-контейнер
+      let toast = document.getElementById('easterEggToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'easterEggToast';
+        toast.style.cssText = `
+          position: fixed;
+          bottom: 30px;
+          left: 50%;
+          transform: translateX(-50%) translateY(100px);
+          background: rgba(14, 22, 36, 0.95);
+          color: #FFFFFF;
+          border: 1px solid var(--primary);
+          box-shadow: 0 10px 30px rgba(0, 189, 125, 0.4), 0 0 20px rgba(56, 189, 248, 0.3);
+          backdrop-filter: blur(12px);
+          padding: 12px 24px;
+          border-radius: 9999px;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.9rem;
+          font-weight: 700;
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+          opacity: 0;
+          pointer-events: none;
+        `;
+        document.body.appendChild(toast);
+      }
+
+      toast.innerHTML = `<span>✨</span><span>${msg}</span>`;
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+      toast.style.opacity = '1';
+
+      if (window.easterEggTimer) clearTimeout(window.easterEggTimer);
+      window.easterEggTimer = setTimeout(() => {
+        toast.style.transform = 'translateX(-50%) translateY(100px)';
+        toast.style.opacity = '0';
+      }, 3200);
+    }
+
+    renderLandingEvents();
+    window.addEventListener('lyceum:db-synced', renderLandingEvents);
   </script>
 
 </body>

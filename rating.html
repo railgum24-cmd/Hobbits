@@ -7,20 +7,31 @@
 <title>Рейтинг учеников</title>
 </head>
 <body>
-  <!-- Шапка -->
+  <!-- Шапка (полноразмерная единая плашка) -->
   <header class="top">
-    <b>Портал достижений лицея</b>
-    <a id="backLink" href="student.html">← Мой кабинет</a>
-    <a href="bot.html">Telegram-бот</a>
-    <span id="who"></span>
-    <button onclick="api.reset()">Сбросить демо</button>
-    <button onclick="Auth.logout()">Выйти</button>
+    <div class="top-left">
+      <a href="index.html" class="brand-title">
+        <span class="brand-dot"></span>
+        <span>ПОРТАЛ ДОСТИЖЕНИЙ ЛИЦЕЯ</span>
+      </a>
+      <span class="user-badge" id="whoBadge">
+        <span class="role-tag" id="whoRole">РЕЙТИНГ</span>
+        <span id="who">Гостевой просмотр</span>
+      </span>
+    </div>
+    <div class="top-right">
+      <div id="ratingSyncBadge" class="sync-status-pill sync-online" title="Статус синхронизации с сервером и Telegram-ботом">БОТ LIVE</div>
+      <a id="backLink" href="student.html" class="top-nav-btn">← Мой кабинет</a>
+      <a href="https://t.me/HobbitBot" target="_blank" class="top-nav-btn">🤖 Telegram-бот</a>
+      <button id="btnResetDemo" onclick="confirmReset()" class="top-nav-btn warning" hidden>↺ Сбросить демо</button>
+      <button id="btnLogout" onclick="Auth.logout()" class="top-nav-btn danger">🚪 Выйти</button>
+    </div>
   </header>
 
   <main class="wrap">
     <!-- Фильтры -->
     <section class="panel">
-      <h2>Рейтинг учеников</h2>
+      <h2>01 // Фильтры рейтинга</h2>
       <div class="row">
         <!-- Категория -->
         <select id="filterCat">
@@ -46,14 +57,16 @@
 
     <!-- Топ-10 -->
     <section class="panel">
-      <h2>Топ-10</h2>
+      <h2>02 // Подиум лидеров (Топ-10)</h2>
       <div id="top10" class="top-cards"></div>
     </section>
 
     <!-- Полная таблица рейтинга -->
     <section class="panel">
-      <h2>Полная таблица</h2>
-      <table id="fullRating"></table>
+      <h2>03 // Полный рейтинг лицея</h2>
+      <div class="table-wrap">
+        <table id="fullRating"></table>
+      </div>
     </section>
   </main>
 
@@ -61,10 +74,11 @@
   <script src="js/storage.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/tilt.js"></script>
+  <script src="js/transitions.js"></script>
   <script>
-    // Авторизация: пускаем и ученика, и админа
+    // Авторизация: пускаем и ученика, и админа, и гостя для открытого рейтинга
     const user = Auth.current();
-    if (!user) location.href = "index.html";
 
     // Экранирование HTML-спецсимволов, чтобы текст не ломал вёрстку
     const esc = s => String(s).replace(/[&<>"]/g,
@@ -76,14 +90,39 @@
       project: "Проект", volunteering: "Волонтёрство"
     };
 
-    // Навигация зависит от роли: админ возвращается в админ-панель
+    // Навигация зависит от роли
     (function setupNav() {
       const link = document.getElementById("backLink");
-      if (user.role === "admin") {
+      const who = document.getElementById("who");
+      const whoRole = document.getElementById("whoRole");
+      const btnLogout = document.getElementById("btnLogout");
+
+      if (!user) {
+        link.href = "index.html";
+        link.textContent = "← Войти в систему";
+        if (who) who.textContent = "Гостевой просмотр";
+        if (whoRole) whoRole.textContent = "ОТКРЫТЫЙ ДОСТУП";
+        if (btnLogout) btnLogout.style.display = "none";
+      } else if (user.role === "admin") {
         link.href = "admin.html";
         link.textContent = "← Админ-панель";
+        if (who) who.textContent = user.name;
+        if (whoRole) whoRole.textContent = "ЗАВУЧ";
+        const btnReset = document.getElementById("btnResetDemo");
+        if (btnReset) btnReset.hidden = false;
+      } else {
+        link.href = "student.html";
+        link.textContent = "← Личный кабинет";
+        if (who) who.textContent = `${user.name} (${user.class || ""})`;
+        if (whoRole) whoRole.textContent = "ЛИЦЕИСТ";
       }
     })();
+
+    function confirmReset() {
+      if (confirm("Вы уверены, что хотите сбросить базу данных до начального состояния?")) {
+        api.reset();
+      }
+    }
 
     // CSS-класс медали для карточки топ-10
     function medalClass(rank) {
@@ -105,7 +144,14 @@
     // Основная функция отрисовки
     function render() {
       // Имя пользователя в шапке
-      document.getElementById("who").textContent = user.name;
+      const whoEl = document.getElementById("who");
+      if (whoEl) {
+        if (user) {
+          whoEl.textContent = user.role === "admin" ? `${user.name} (Завуч)` : `${user.name} (${user.class || ""})`;
+        } else {
+          whoEl.textContent = "Гостевой просмотр";
+        }
+      }
 
       // Собрать фильтры из элементов формы
       const filters = {};
@@ -143,14 +189,14 @@
       // --- Полная таблица рейтинга ---
       const headerRow = "<tr><th>Место</th><th>Имя</th><th>Класс</th><th>Баллы</th><th>Достижений</th></tr>";
       const bodyRows = board.map(r => {
-        // Подсветить строку текущего пользователя
-        const isMeClass = r.userId === user.id ? ' class="me"' : "";
+        // Подсветить строку текущего пользователя (если авторизован)
+        const isMeClass = (user && r.userId === user.id) ? ' class="me"' : "";
         return `<tr${isMeClass}>
-          <td>${r.rank}</td>
-          <td>${esc(r.name)}</td>
+          <td><b>#${r.rank}</b></td>
+          <td><b style="color:var(--text-main)">${esc(r.name)}</b></td>
           <td>${esc(r.class)}</td>
-          <td>${r.total}</td>
-          <td>${r.count}</td>
+          <td><b style="font-family:'Oswald',sans-serif;font-weight:700;color:var(--primary)">${r.total}</b></td>
+          <td><span class="tag">${r.count}</span></td>
         </tr>`;
       }).join("");
       document.getElementById("fullRating").innerHTML = headerRow + bodyRows
@@ -159,6 +205,23 @@
 
     // Первичная отрисовка
     render();
+
+    // Мгновенное обновление при синхронизации с сервером / ботом
+    window.addEventListener('lyceum:db-synced', () => {
+      render();
+    });
+
+    window.addEventListener('lyceum:server-status', (e) => {
+      const badge = document.getElementById("ratingSyncBadge");
+      if (!badge) return;
+      if (e.detail && e.detail.online) {
+        badge.textContent = "БОТ LIVE";
+        badge.className = "sync-status-pill sync-online";
+      } else {
+        badge.textContent = "ОФФЛАЙН КЭШ";
+        badge.className = "sync-status-pill sync-offline";
+      }
+    });
   </script>
 </body>
 </html>

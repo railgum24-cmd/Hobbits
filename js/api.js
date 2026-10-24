@@ -21,7 +21,7 @@ const api = (() => {
   };
 
   // Публичная версия пользователя: без хеша пароля
-  const pub = ({ passHash, ...u }) => u;
+  const pub = ({ passHash, password, ...u }) => u;
 
   // Генератор уникальных id: "a_lx3k9ab"
   const newId = (prefix) =>
@@ -45,8 +45,25 @@ const api = (() => {
   let db = Storage.load();
   if (!db) {
     db = structuredClone(SEED);
-    // Хешируем пароли при первой загрузке
-    db.users.forEach(u => { u.passHash = hash(u.password); delete u.password; });
+    // Хешируем пароли при первой загрузке, сохраняя поле password для Telegram-бота
+    db.users.forEach(u => { u.passHash = hash(u.password); });
+  }
+
+  // Фоновая синхронизация с единым сервером и Telegram-ботом
+  Storage.syncWithServer((serverDb) => {
+    if (serverDb && serverDb.users && serverDb.achievements) {
+      db = serverDb;
+      window.dispatchEvent(new CustomEvent('lyceum:db-synced', { detail: db }));
+    }
+  });
+
+  // Слушаем событие обновления единой базы данных
+  if (typeof window !== "undefined") {
+    window.addEventListener('lyceum:db-synced', (e) => {
+      if (e.detail && e.detail.users && e.detail.achievements) {
+        db = e.detail;
+      }
+    });
   }
 
   // Сохранить изменения после каждой записи
@@ -78,19 +95,28 @@ const api = (() => {
         return u ? pub(u) : null;
       },
 
+      // Проверка, является ли пользователь базовым из сидов
+      isSeed(u) {
+        if (!u) return false;
+        return SEED.users.some(s => s.id === u.id || (s.login && u.login && s.login.toLowerCase() === u.login.toLowerCase()));
+      },
+
       // Регистрация нового ученика
       create(data) {
         if (!data.name || !data.login) fail("Заполните имя и логин");
         if (!data.password || data.password.length < 4) fail("Пароль: минимум 4 символа");
         if (!data.class) fail("Укажите класс");
-        if (db.users.some(u => u.login === data.login)) fail("Такой логин уже существует");
+        if (db.users.some(u => u.login.toLowerCase() === data.login.trim().toLowerCase())) fail("Такой логин уже существует");
         const u = {
           id: newId("u"),
           name: data.name.trim(),
           class: data.class.trim(),
           role: "student",
           login: data.login.trim(),
-          passHash: hash(data.password)
+          password: data.password.trim(),
+          passHash: hash(data.password),
+          isNew: true,
+          registeredAt: today()
         };
         db.users.push(u);
         commit();
@@ -98,14 +124,72 @@ const api = (() => {
       },
 
       // Список всех учеников (для рейтинга и админки)
-      students: () => db.users.filter(u => u.role === "student").map(pub)
+      students: () => db.users.filter(u => u.role === "student").map(pub),
+
+      // Список только новых зарегистрированных аккаунтов (для управления в админке)
+      newUsers() {
+        return db.users
+          .filter(u => u.role !== "admin" && (u.isNew || !SEED.users.some(s => s.id === u.id || s.login.toLowerCase() === u.login.toLowerCase())))
+          .map(u => ({
+            ...pub(u),
+            achievementsCount: db.achievements.filter(a => a.userId === u.id).length
+          }));
+      },
+
+      // Удаление конкретного пользователя (только администратор)
+      delete(id, adminId) {
+        requireAdmin(adminId);
+        const target = db.users.find(u => u.id === id) || fail("Пользователь не найден");
+        if (target.role === "admin") fail("Нельзя удалить администратора");
+        
+        // Удаляем пользователя и все его достижения
+        db.users = db.users.filter(u => u.id !== id);
+        db.achievements = db.achievements.filter(a => a.userId !== id);
+        commit();
+        return true;
+      },
+
+      // Удаление ВСЕХ новых зарегистрированных аккаунтов (только администратор)
+      deleteNewUsers(adminId) {
+        requireAdmin(adminId);
+        const seedLogins = new Set(SEED.users.map(s => s.login.toLowerCase()));
+        const seedIds = new Set(SEED.users.map(s => s.id));
+
+        // Идентифицируем аккаунты, созданные после сидов
+        const toDelete = db.users.filter(u => u.role !== "admin" && (u.isNew || (!seedIds.has(u.id) && !seedLogins.has(u.login.toLowerCase()))));
+        const toDeleteIds = new Set(toDelete.map(u => u.id));
+
+        const usersCount = toDelete.length;
+        const achievementsCount = db.achievements.filter(a => toDeleteIds.has(a.userId)).length;
+
+        // Удаляем пользователей и связанные достижения
+        db.users = db.users.filter(u => !toDeleteIds.has(u.id));
+        db.achievements = db.achievements.filter(a => !toDeleteIds.has(a.userId));
+        
+        // Очищаем отдельное локальное хранилище
+        Storage.clearRegisteredUsers();
+        commit();
+
+        return { deletedUsers: usersCount, deletedAchievements: achievementsCount };
+      },
+
+      // Экспорт локальной базы зарегистрированных аккаунтов в JSON
+      exportRegisteredJSON(adminId) {
+        requireAdmin(adminId);
+        const newOnes = this.newUsers();
+        Storage.exportJSON(newOnes, "registered_accounts_" + today() + ".json");
+      }
     },
 
     // ---------- Авторизация ----------
     auth: {
       // Проверка логина и пароля
       check(login, password) {
-        const u = db.users.find(x => x.login === login && x.passHash === hash(password));
+        const trimmedLogin = (login || "").trim().toLowerCase();
+        const u = db.users.find(x => 
+          (x.login || "").toLowerCase() === trimmedLogin && 
+          (x.passHash === hash(password) || String(x.password) === String(password))
+        );
         if (!u) fail("Неверный логин или пароль");
         return pub(u);
       }
@@ -388,9 +472,9 @@ const api = (() => {
       }
     },
 
-    // ---------- ИИ-помощник (рекомендательная система) ----------
-    assistant: {
-      recommend(userId) {
+    // ---------- Академический аудит (расчёт стипендий и баланса дисциплин) ----------
+    academic: {
+      audit(userId) {
         const user = db.users.find(u => u.id === userId);
         if (!user) fail("Пользователь не найден");
 
@@ -399,43 +483,22 @@ const api = (() => {
         approved.forEach(a => { scores[a.category] = (scores[a.category] || 0) + a.points; });
         const total = approved.reduce((s, a) => s + a.points, 0);
 
-        const tips = [];
         const targetScholarship = 60; // Порог для повышенной стипендии лицея
-
-        if (total < targetScholarship) {
-          tips.push(`До повышенной академической стипендии не хватает **${targetScholarship - total} баллов**.`);
-        } else {
-          tips.push(`🎉 Вы преодолели порог повышенной стипендии (${total} из ${targetScholarship} баллов)!`);
-        }
-
-        // Анализ профильных предметов
-        const stemWeak = [];
-        if (scores.physics === 0) stemWeak.push("физике");
-        if (scores.math === 0) stemWeak.push("математике");
-        if (scores.informatics === 0) stemWeak.push("информатике");
-
-        if (stemWeak.length > 0) {
-          tips.push(`Для инженерного/IT-профиля рекомендуем добавить достижения по **${stemWeak.join(", ")}**.`);
-        } else {
-          tips.push(`Отличный баланс: у вас закрыты все ключевые дисциплины (физика, математика, IT)!`);
-        }
-
-        // Конкретные советы мероприятий
-        if (scores.informatics < 30) {
-          tips.push(`💡 **Совет:** примите участие в ближайшем хакатоне или муниципальном этапе ВсОШ по информатике — это даст от 25 до 40 баллов.`);
-        }
-        if (scores.math < 30) {
-          tips.push(`💡 **Совет:** открыта регистрация на олимпиаду по математике «Росатом» и турнир Ломоносова.`);
-        }
-        if (scores.volunteering === 0) {
-          tips.push(`💡 **Бонус:** добавьте волонтёрские часы лицея — они учитываются при равенстве баллов в рейтинге.`);
-        }
+        const scholarshipReady = total >= targetScholarship;
+        const ptsNeeded = Math.max(0, targetScholarship - total);
 
         return {
           studentName: user.name,
           currentPoints: total,
-          scholarshipReady: total >= targetScholarship,
-          tips
+          targetScholarship,
+          scholarshipReady,
+          ptsNeeded,
+          scores,
+          calendar: [
+            { date: "14 ноя", title: "Муниципальный этап ВсОШ по физике", cat: "Физика", pts: "до +35 б." },
+            { date: "21 ноя", title: "Лицейский IT-хакатон по алгоритмам", cat: "Информатика", pts: "до +40 б." },
+            { date: "02 дек", title: "Олимпиада «Росатом» по математике", cat: "Математика", pts: "до +50 б." }
+          ]
         };
       }
     },
@@ -480,6 +543,81 @@ const api = (() => {
     // ---------- Таблица баллов (публичная) ----------
     pointsTable: {
       get: () => db.pointsTable || SEED.pointsTable
+    },
+
+    // ---------- Афиши мероприятий и олимпиад ----------
+    events: {
+      // Список всех афиш
+      list: () => [...(db.events || SEED.events || [])],
+
+      // Получить одну афишу по id
+      get: (id) => (db.events || SEED.events || []).find(e => e.id === id) || null,
+
+      // Добавить новую афишу (только администратор)
+      create(data, adminId) {
+        requireAdmin(adminId);
+        if (!data.title || !data.title.trim()) fail("Введите название мероприятия");
+        if (!data.date || !data.date.trim()) fail("Укажите дату проведения");
+        if (!db.events) db.events = [...(SEED.events || [])];
+
+        const newEv = {
+          id: "ev-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+          title: data.title.trim(),
+          category: data.category || "informatics",
+          level: data.level || "Региональный",
+          date: data.date.trim(),
+          place: (data.place || "Лицей").trim(),
+          pointsAward: (data.pointsAward || "+20 баллов").trim(),
+          badgeText: (data.badgeText || "ОЛИМПИАДА").trim(),
+          imageUrl: (data.imageUrl || "").trim(),
+          registrationLink: (data.registrationLink || "").trim(),
+          description: (data.description || "").trim(),
+          createdAt: today()
+        };
+
+        db.events.unshift(newEv);
+        commit();
+
+        // Фоновый запрос к серверу на добавление
+        fetch("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEv)
+        }).catch(() => {
+          fetch(Storage.SERVER_URL + "/api/events", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newEv)
+          }).catch(() => {});
+        });
+
+        return newEv;
+      },
+
+      // Удалить афишу по id (только администратор)
+      delete(id, adminId) {
+        requireAdmin(adminId);
+        if (!db.events) db.events = [...(SEED.events || [])];
+        const idx = db.events.findIndex(e => e.id === id);
+        if (idx === -1) fail("Мероприятие не найдено");
+        db.events.splice(idx, 1);
+        commit();
+
+        // Фоновый запрос к серверу на удаление
+        fetch("/api/events?id=" + encodeURIComponent(id), { method: "DELETE" }).catch(() => {
+          fetch(Storage.SERVER_URL + "/api/events?id=" + encodeURIComponent(id), { method: "DELETE" }).catch(() => {});
+        });
+
+        return true;
+      }
+    },
+
+    // Принудительная синхронизация с единым сервером / ботом
+    sync(onDone) {
+      return Storage.forceSync((serverDb) => {
+        if (serverDb) db = serverDb;
+        if (typeof onDone === "function") onDone(db);
+      });
     },
 
     // Сброс демо: удалить сохранённые данные и вернуть тестовые

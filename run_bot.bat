@@ -2,8 +2,11 @@
 cd /d "%~dp0"
 cls
 echo ==============================================================
-echo       Telegram-Bot HobbitBot: Lyceum Achievements Portal
+echo       Telegram-Bot HobbitBot + HTTP API Web Server (Port 8000)
 echo ==============================================================
+echo.
+echo [ИНФО] Запуск бота и встроенного API сервера...
+echo [САЙТ] Доступен по адресу: http://localhost:8000
 echo.
 
 if exist "C:\Users\siado\.local\bin\python3.15.exe" (

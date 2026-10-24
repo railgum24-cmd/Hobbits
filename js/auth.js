@@ -2,10 +2,13 @@
 const Auth = {
   // Вход по логину и паролю: проверку делает api.auth.check,
   // при неверных данных она бросает ошибку, и переход не происходит
-  login(login, password) {
+  login(login, password, noRedirect = false) {
     const user = api.auth.check(login.trim(), password);
     sessionStorage.setItem("userId", user.id);
-    location.href = user.role === "admin" ? "admin.html" : "student.html";
+    if (!noRedirect) {
+      location.href = user.role === "admin" ? "admin.html" : "student.html";
+    }
+    return user;
   },
 
   // Кто сейчас вошёл (или null)

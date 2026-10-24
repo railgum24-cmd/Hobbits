@@ -17,15 +17,15 @@ def create_deck():
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
 
-    # Цветовая палитра сайта
-    BG_COLOR = RGBColor(11, 19, 43)        # #0b132b
-    CARD_BG = RGBColor(23, 37, 84)         # #172554
-    ACCENT_CYAN = RGBColor(56, 189, 248)   # #38bdf8
-    ACCENT_BLUE = RGBColor(96, 165, 250)   # #60a5fa
-    TEXT_WHITE = RGBColor(248, 250, 252)   # #f8fafc
-    TEXT_MUTED = RGBColor(148, 163, 184)   # #94a3b8
-    GREEN_COLOR = RGBColor(52, 211, 153)   # #34d399
-    AMBER_COLOR = RGBColor(251, 191, 36)   # #fbbf24
+    # Цветовая палитра Perspective Design System (#00BD7D Emerald, High Contrast, Spatial Depth)
+    BG_COLOR = RGBColor(15, 23, 42)          # Глубокий сланцевый фон #0f172a
+    CARD_BG = RGBColor(30, 41, 59)           # Приподнятые карточки #1e293b
+    ACCENT_CYAN = RGBColor(0, 189, 125)      # Primary Emerald #00BD7D
+    ACCENT_BLUE = RGBColor(0, 189, 125)      # Secondary Emerald #00BD7D
+    TEXT_WHITE = RGBColor(255, 255, 255)     # #FFFFFF
+    TEXT_MUTED = RGBColor(148, 163, 184)     # #94a3b8
+    GREEN_COLOR = RGBColor(22, 163, 74)      # #16a34a Success
+    AMBER_COLOR = RGBColor(217, 119, 6)      # #d97706 Warning
 
     blank_layout = prs.slide_layouts[6]
 
@@ -43,6 +43,7 @@ def create_deck():
         tf.word_wrap = True
         p = tf.paragraphs[0]
         p.text = tag_text.upper()
+        p.font.name = "Oswald"
         p.font.size = Pt(11)
         p.font.bold = True
         p.font.color.rgb = ACCENT_CYAN
@@ -53,6 +54,7 @@ def create_deck():
         tf2.word_wrap = True
         p2 = tf2.paragraphs[0]
         p2.text = title_text
+        p2.font.name = "Oswald"
         p2.font.size = Pt(24)
         p2.font.bold = True
         p2.font.color.rgb = TEXT_WHITE
@@ -75,6 +77,7 @@ def create_deck():
         if title:
             p = tf.paragraphs[0]
             p.text = title
+            p.font.name = "Oswald"
             p.font.size = Pt(15)
             p.font.bold = True
             p.font.color.rgb = TEXT_WHITE
@@ -83,6 +86,7 @@ def create_deck():
         for item in items:
             p = tf.add_paragraph()
             p.text = item
+            p.font.name = "Poppins"
             p.font.size = Pt(12)
             p.font.color.rgb = TEXT_MUTED
             p.space_after = Pt(6)
@@ -247,7 +251,7 @@ def create_deck():
     # =========================================================================
     s6 = prs.slides.add_slide(blank_layout)
     set_slide_background(s6)
-    add_header(s6, "UX/UI & Инновации", "Личный кабинет, PDF-портфолио и ИИ-помощник")
+    add_header(s6, "UX/UI & Инновации", "Личный кабинет, PDF-портфолио и Академический аудит")
 
     add_card(s6, Inches(0.8), Inches(1.8), Inches(3.7), Inches(5.0), "📄 Официальное портфолио", [
         "• Генерация чистого документа для приёмных комиссий и стипендиальных советов.",
@@ -256,11 +260,11 @@ def create_deck():
         "• Экспорт в PDF / печать в 1 клик (Ctrl+P)."
     ])
 
-    add_card(s6, Inches(4.8), Inches(1.8), Inches(3.7), Inches(5.0), "🤖 ИИ-помощник лицеиста", [
-        "• Анализирует баланс дисциплин (STEM-аудит).",
-        "• Рассчитывает отставание от порога академической стипендии (60+ баллов).",
-        "• Выявляет пробелы (например, 'нет достижений по математике').",
-        "• Рекомендует конкретные турниры для участия."
+    add_card(s6, Inches(4.8), Inches(1.8), Inches(3.7), Inches(5.0), "📊 Академический аудит", [
+        "• Расчёт прогресса до повышенной стипендии (порог 60 баллов).",
+        "• Мониторинг баланса ключевых STEM-дисциплин (физика, математика, IT).",
+        "• Официальный лицейский календарь ближайших олимпиад и хакатонов.",
+        "• Прозрачный алгоритмический расчёт без субъективных факторов."
     ], border_color=ACCENT_CYAN)
 
     add_card(s6, Inches(8.8), Inches(1.8), Inches(3.7), Inches(5.0), "🎖 Элементы геймификации", [
@@ -283,7 +287,7 @@ def create_deck():
         "• Экспресс-панель модерации: проверка входящих заявок учеников.",
         "• Просмотр прикреплённых сканов дипломов по ссылке.",
         "• Быстрые действия: '✓ Принять' / '✗ Отклонить' с обязательной фиксацией причины.",
-        "• Прямое внесение достижений любому ученику от имени лицея.",
+        "• Управление базой аккаунтов: удаление новых/тестовых профилей в 1 клик, экспорт базы в JSON.",
         "• Экспорт отчёта в CSV (с поддержкой Excel UTF-8 BOM) для школьной отчётности."
     ])
 

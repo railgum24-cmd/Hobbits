@@ -1,108 +1,402 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="css/style.css">
-<title>Личный кабинет</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+  <title>Личный кабинет лицеиста — Реестр достижений</title>
 </head>
 <body>
-  <!-- Шапка: название портала, навигация, имя ученика, кнопки -->
+
+  <!-- =================================================================
+       ВЕРХНЯЯ СТРОКА СТАТУСА (ПОЛНОРАЗМЕРНАЯ ЕДИНАЯ ПЛАШКА)
+       ================================================================= -->
   <header class="top">
-    <b>Портал достижений лицея</b>
-    <a href="rating.html">Рейтинг</a>
-    <a href="bot.html">Telegram-бот</a>
-    <span id="who"></span>
-    <button onclick="api.reset()">Сбросить демо</button>
-    <button onclick="Auth.logout()">Выйти</button>
+    <div class="top-left">
+      <a href="index.html" class="brand-title">
+        <span class="brand-dot"></span>
+        <span>ПОРТАЛ ДОСТИЖЕНИЙ ЛИЦЕЯ</span>
+      </a>
+      <span class="user-badge">
+        <span class="role-tag">ЛИЦЕИСТ</span>
+        <span id="who">Загрузка...</span>
+      </span>
+    </div>
+    <div class="top-right">
+      <div id="studentSyncBadge" class="sync-status-pill sync-online" title="Статус синхронизации с единой базой и ботом">
+        БОТ ПОДКЛЮЧЁН
+      </div>
+      <button onclick="forceStudentSync()" class="top-nav-btn" title="Принудительно синхронизировать">
+        <span>🔄</span>
+        <span>Синхронизировать</span>
+      </button>
+      <a href="rating.html" class="top-nav-btn">
+        <span>🏆</span>
+        <span>Общелицейский рейтинг</span>
+      </a>
+      <a href="https://t.me/HobbitBot" target="_blank" class="top-nav-btn">
+        <span>🤖</span>
+        <span>Telegram-бот @HobbitBot</span>
+      </a>
+      <button onclick="Auth.logout()" class="top-nav-btn danger">
+        <span>🚪</span>
+        <span>Выйти</span>
+      </button>
+    </div>
   </header>
 
+  <!-- =================================================================
+       ОСНОВНОЙ КОНТЕНТ: ЛИЧНЫЙ КАБИНЕТ БЕЗ ХАОСА
+       ================================================================= -->
   <main class="wrap">
-    <!-- Сообщения: успех / ошибка -->
-    <p id="msg"></p>
+    
+    <!-- Сообщения статуса -->
+    <p id="msg" style="margin: 0 0 12px; font-weight:600; font-size:0.9rem;"></p>
 
-    <!-- ===== Блок прогресса ===== -->
-    <section class="panel">
-      <h2>Мой прогресс</h2>
+    <!-- ── СВОДКА ПРОГРЕССА ЛИЦЕИСТА ── -->
+    <section class="panel" style="padding: 24px 28px; margin-bottom: 24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+        <h2 style="margin:0;">ЛИЧНЫЙ ПРОГРЕСС И СТИПЕНДИЯ</h2>
+        <span class="badge" style="background:var(--primary-light); color:var(--primary); border-color:var(--primary-border);" id="badgeClass">
+          9-11 КЛАССЫ
+        </span>
+      </div>
       <div id="progress-stats"></div>
     </section>
 
-    <!-- ===== Геймификация и значки ===== -->
-    <section class="panel">
-      <h2>Награды и достижения</h2>
-      <div id="gamification-block"></div>
-    </section>
+    <!-- ── СЕТКА ФУНКЦИОНАЛЬНЫХ ОКОН (ACTION TILES) С ЭФФЕКТОМ ПЕРЕВЕСА ── -->
+    <div style="margin-bottom: 8px;">
+      <div class="section-tag">[ ФУНКЦИОНАЛЬНЫЙ ЦЕНТР УПРАВЛЕНИЯ ]</div>
+      <h3 style="font-family:'Oswald',sans-serif; font-size:1.35rem; color:#fff; margin:0 0 4px; text-transform:uppercase;">
+        ИНСТРУМЕНТЫ И МОДУЛИ
+      </h3>
+      <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">
+        Нажмите на нужный раздел — откроется изолированное контекстное окно без визуального шума.
+      </p>
+    </div>
 
-    <!-- ===== ИИ-помощник лицеиста ===== -->
-    <section class="panel" style="border-left: 4px solid var(--gold);">
-      <h2>🤖 ИИ-помощник лицеиста</h2>
-      <div id="assistant-block"></div>
-    </section>
-
-    <!-- ===== Форма подачи достижения ===== -->
-    <section class="panel">
-      <h2>Подать достижение</h2>
-      <form onsubmit="return addAchievement()">
-        <div class="row">
-          <input id="achTitle" placeholder="Название" required>
-          <select id="achCategory" required>
-            <option value="">Категория…</option>
-            <option value="physics">Физика</option>
-            <option value="math">Математика</option>
-            <option value="informatics">Информатика</option>
-            <option value="project">Проект</option>
-            <option value="volunteering">Волонтёрство</option>
-          </select>
-          <select id="achType" required>
-            <option value="">Тип…</option>
-            <option value="olympiad">Олимпиада</option>
-            <option value="competition">Конкурс</option>
-            <option value="conference">Конференция</option>
-            <option value="project">Проект</option>
-            <option value="volunteering">Волонтёрство</option>
-            <option value="exam">Экзамен</option>
-          </select>
+    <div class="action-tiles-grid">
+      
+      <!-- Плитка 1: Подать достижение -->
+      <div class="action-tile" onclick="openModal('modalSubmit')" data-tilt>
+        <div class="action-tile-top">
+          <span class="action-tile-icon">📝</span>
+          <span class="action-tile-tag">[ПОДАЧА]</span>
         </div>
-        <div class="row">
-          <select id="achLevel" required>
-            <option value="">Уровень…</option>
-            <option value="school">Школьный</option>
-            <option value="city">Городской</option>
-            <option value="region">Региональный</option>
-            <option value="federal">Федеральный</option>
-          </select>
-          <select id="achResult" required>
-            <option value="">Результат…</option>
-            <option value="winner">Победитель</option>
-            <option value="prize">Призёр</option>
-            <option value="participant">Участник</option>
-          </select>
-          <input id="achDate" type="date" required>
+        <div>
+          <h4 class="action-tile-title">ПОДАТЬ ДОСТИЖЕНИЕ</h4>
+          <p class="action-tile-sub">Загрузите диплом или грамоту на проверку завучу с автоматическим расчётом баллов.</p>
         </div>
-        <div class="row">
-          <input id="achFile" placeholder="Ссылка на подтверждение (диплом, грамота, Яндекс.Диск) — опционально" style="width:100%">
+        <span class="action-tile-arrow">Открыть форму заявки →</span>
+      </div>
+
+      <!-- Плитка 2: Официальные дипломы -->
+      <div class="action-tile" onclick="openModal('modalDiplomas')" data-tilt>
+        <div class="action-tile-top">
+          <span class="action-tile-icon">📜</span>
+          <span class="action-tile-tag">[ДИПЛОМЫ]</span>
         </div>
-        <textarea id="achDesc" rows="2" placeholder="Описание (необязательно)"></textarea>
-        <button type="submit">Отправить на проверку</button>
-      </form>
+        <div>
+          <h4 class="action-tile-title">ОФИЦИАЛЬНЫЕ ДИПЛОМЫ</h4>
+          <p class="action-tile-sub">3 шаблона Perspective (Победитель, Призёр, Участник) с персональным скачиванием PNG.</p>
+        </div>
+        <span class="action-tile-arrow">Смотреть образцы →</span>
+      </div>
+
+      <!-- Плитка 3: Награды и значки -->
+      <div class="action-tile" onclick="openModal('modalBadges')" data-tilt>
+        <div class="action-tile-top">
+          <span class="action-tile-icon">🎖</span>
+          <span class="action-tile-tag">[НАГРАДЫ]</span>
+        </div>
+        <div>
+          <h4 class="action-tile-title">НАГРАДЫ И ЗНАЧКИ</h4>
+          <p class="action-tile-sub">Лицейский статус, бейджи за участие в олимпиадах и шкала рангов.</p>
+        </div>
+        <span class="action-tile-arrow">Посмотреть значки →</span>
+      </div>
+
+      <!-- Плитка 4: Академический профиль & Стипендия -->
+      <div class="action-tile" onclick="openModal('modalAudit')" data-tilt>
+        <div class="action-tile-top">
+          <span class="action-tile-icon">🎓</span>
+          <span class="action-tile-tag">[СТИПЕНДИЯ]</span>
+        </div>
+        <div>
+          <h4 class="action-tile-title">ПРОФИЛЬ & СТИПЕНДИЯ</h4>
+          <p class="action-tile-sub">Квалификация на стипендию лицея и расписание ближайших олимпиад.</p>
+        </div>
+        <span class="action-tile-arrow">Открыть аудит →</span>
+      </div>
+
+      <!-- Плитка 5: Афиша олимпиад и состязаний -->
+      <div class="action-tile" onclick="openModal('modalStudentEvents')" data-tilt>
+        <div class="action-tile-top">
+          <span class="action-tile-icon">📢</span>
+          <span class="action-tile-tag" id="tileStudentEventsTag">[4 СОБЫТИЯ]</span>
+        </div>
+        <div>
+          <h4 class="action-tile-title">АФИША ОЛИМПИАД</h4>
+          <p class="action-tile-sub">Календарь олимпиад, хакатонов и состязаний с ссылками на участие и баллами.</p>
+        </div>
+        <span class="action-tile-arrow">Смотреть афиши →</span>
+      </div>
+
+    </div>
+
+    <!-- ── БЛИЖАЙШИЕ МЕРОПРИЯТИЯ И ОЛИМПИАДЫ ЛИЦЕЯ ── -->
+    <section class="panel" style="margin-top: 14px; margin-bottom: 20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+        <div>
+          <div class="section-tag">[ АНОНСЫ И ОЛИМПИАДЫ ]</div>
+          <h2 style="margin:0;">БЛИЖАЙШИЕ СОБЫТИЯ ЛИЦЕЯ</h2>
+          <p style="font-size:0.86rem; color:var(--text-muted); margin:4px 0 0;">
+            Участвуйте в состязаниях, набирайте баллы и претендуйте на повышенную стипендию лицея.
+          </p>
+        </div>
+        <button class="top-nav-btn" onclick="openModal('modalStudentEvents')">
+          <span>📢</span> <span>Открыть все афиши</span>
+        </button>
+      </div>
+      <div id="studentEventsDashboardList" class="events-grid"></div>
     </section>
 
-    <!-- ===== Таблица достижений ===== -->
-    <section class="panel">
-      <h2>Мои достижения</h2>
-      <table id="myAchievements"></table>
+    <!-- ── ОСНОВНАЯ ТАБЛИЦА: РЕЕСТР ДОСТИЖЕНИЙ УЧЕНИКА ── -->
+    <section class="panel" style="margin-top: 10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">РЕЕСТР МОИХ ДОСТИЖЕНИЙ</h2>
+          <p style="font-size:0.86rem; color:var(--text-muted); margin:4px 0 0;">
+            Полная история ваших наград с номерами подтверждений и кнопкой скачивания защищённого диплома.
+          </p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="top-nav-btn primary" onclick="openModal('modalSubmit')">
+            <span>➕</span> <span>Подать достижение</span>
+          </button>
+          <button class="top-nav-btn" onclick="exportPortfolio()">
+            <span>📄</span> <span>Скачать портфолио (PDF)</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="myAchievements"></table>
+      </div>
     </section>
 
-    <!-- Кнопка экспорта портфолио -->
-    <p><button onclick="exportPortfolio()">Скачать портфолио (PDF)</button></p>
   </main>
 
-  <!-- Подключаем скрипты в нужном порядке -->
+  <!-- =================================================================
+       КОНТЕКСТНЫЕ МОДАЛЬНЫЕ ОКНА (РАЗМЫТИЕ ЗАДНЕГО ФОНА)
+       ================================================================= -->
+
+  <!-- 1. Модальное окно: Подать достижение -->
+  <div id="modalSubmit" class="context-modal-overlay">
+    <div class="context-modal-window">
+      <div class="context-modal-header">
+        <div>
+          <div class="section-tag">[ ВЕРИФИКАЦИОННАЯ ЗАЯВКА ]</div>
+          <h2>ПОДАТЬ ДОСТИЖЕНИЕ</h2>
+          <p>Заполните форму, и заявка мгновенно поступит завучу на проверку.</p>
+        </div>
+        <button class="context-modal-close" onclick="closeModal('modalSubmit')">×</button>
+      </div>
+
+      <form onsubmit="return addAchievement()">
+        <div style="margin-bottom:14px;">
+          <label for="achTitle">Название олимпиады или состязания</label>
+          <input id="achTitle" placeholder="Например: ВсОШ по физике (региональный этап)" required>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div>
+            <label for="achCategory">Категория предмета</label>
+            <select id="achCategory" required>
+              <option value="">Выберите предмет…</option>
+              <option value="physics">Физика</option>
+              <option value="math">Математика</option>
+              <option value="informatics">Информатика</option>
+              <option value="project">Проект</option>
+              <option value="volunteering">Волонтёрство</option>
+            </select>
+          </div>
+          <div>
+            <label for="achType">Тип мероприятия</label>
+            <select id="achType" required>
+              <option value="">Выберите тип…</option>
+              <option value="olympiad">Олимпиада</option>
+              <option value="competition">Конкурс / Турнир</option>
+              <option value="conference">Конференция</option>
+              <option value="project">Проект</option>
+              <option value="volunteering">Волонтёрство</option>
+              <option value="exam">Спецэкзамен</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div>
+            <label for="achLevel">Уровень мероприятия</label>
+            <select id="achLevel" required>
+              <option value="">Выберите уровень…</option>
+              <option value="school">Школьный / Лицейский</option>
+              <option value="city">Городской / Муниципальный</option>
+              <option value="region">Региональный этап</option>
+              <option value="federal">Федеральный этап (ВсОШ)</option>
+            </select>
+          </div>
+          <div>
+            <label for="achResult">Занятое место / Результат</label>
+            <select id="achResult" required>
+              <option value="">Выберите результат…</option>
+              <option value="winner">Победитель (1 место)</option>
+              <option value="prize">Призёр (2–3 место)</option>
+              <option value="participant">Участник</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div>
+            <label for="achDate">Дата проведения</label>
+            <input id="achDate" type="date" required>
+          </div>
+          <div>
+            <label for="achFile">Ссылка на скан / грамоту</label>
+            <input id="achFile" placeholder="Ссылка на облако или диск (необязательно)">
+          </div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <label for="achDesc">Краткие примечания к заявке</label>
+          <textarea id="achDesc" rows="2" placeholder="Укажите наставника или номер секции…"></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px;">
+          <button type="button" class="top-nav-btn" onclick="closeModal('modalSubmit')">Отмена</button>
+          <button type="submit" class="btn btn-primary">Отправить на верификацию →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Модальное окно: Официальные дипломы -->
+  <div id="modalDiplomas" class="context-modal-overlay">
+    <div class="context-modal-window wide">
+      <div class="context-modal-header">
+        <div>
+          <div class="section-tag">[ ЭЛЕКТРОННЫЕ СЕРТИФИКАТЫ ]</div>
+          <h2>ОФИЦИАЛЬНЫЕ ДИПЛОМЫ ЛИЦЕЯ</h2>
+          <p>Скачайте официальный наградной документ высокого разрешения в стиле Perspective с вашим именем:</p>
+        </div>
+        <button class="context-modal-close" onclick="closeModal('modalDiplomas')">×</button>
+      </div>
+
+      <div class="diploma-gallery-grid">
+        <!-- 1. Диплом победителя -->
+        <div class="diploma-preview-card" data-tilt>
+          <img src="assets/diplomas/diploma_winner.png" alt="Диплом победителя">
+          <div class="desc">
+            <div>
+              <b style="font-family:'Oswald',sans-serif;color:var(--primary);font-size:1.05rem;display:block">ДИПЛОМ ПОБЕДИТЕЛЯ (GOLD)</b>
+              <span class="hint">1-е место • Изумрудный стиль Perspective</span>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="downloadDiplomaTemplate('winner')" style="width:100%; justify-content:center;">
+              📥 Скачать PNG
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Диплом призёра -->
+        <div class="diploma-preview-card" data-tilt>
+          <img src="assets/diplomas/diploma_prize.png" alt="Диплом призёра">
+          <div class="desc">
+            <div>
+              <b style="font-family:'Oswald',sans-serif;color:#38BDF8;font-size:1.05rem;display:block">ДИПЛОМ ПРИЗЁРА (SILVER)</b>
+              <span class="hint">2–3 места • Лазурный стиль Perspective</span>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="downloadDiplomaTemplate('prize')" style="width:100%; justify-content:center;">
+              📥 Скачать PNG
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Диплом участника -->
+        <div class="diploma-preview-card" data-tilt>
+          <img src="assets/diplomas/diploma_participant.png" alt="Сертификат участника">
+          <div class="desc">
+            <div>
+              <b style="font-family:'Oswald',sans-serif;color:#A78BFA;font-size:1.05rem;display:block">СЕРТИФИКАТ УЧАСТНИКА</b>
+              <span class="hint">Участник олимпиад • Фиолетовый стиль</span>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="downloadDiplomaTemplate('participant')" style="width:100%; justify-content:center;">
+              📥 Скачать PNG
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Модальное окно: Значки и геймификация -->
+  <div id="modalBadges" class="context-modal-overlay">
+    <div class="context-modal-window">
+      <div class="context-modal-header">
+        <div>
+          <div class="section-tag">[ ГЕЙМИФИКАЦИЯ ]</div>
+          <h2>НАГРАДЫ И ЛИЦЕЙСКИЙ РАНГ</h2>
+          <p>Ваши академические значки и прогресс следующего ранга.</p>
+        </div>
+        <button class="context-modal-close" onclick="closeModal('modalBadges')">×</button>
+      </div>
+
+      <div id="gamification-block"></div>
+    </div>
+  </div>
+
+  <!-- 4. Модальное окно: Академический профиль & Стипендия -->
+  <div id="modalAudit" class="context-modal-overlay">
+    <div class="context-modal-window">
+      <div class="context-modal-header">
+        <div>
+          <div class="section-tag">[ АКАДЕМИЧЕСКИЙ АУДИТ ]</div>
+          <h2>СТИПЕНДИЯ & КАЛЕНДАРЬ ОЛИМПИАД</h2>
+          <p>Проверка условий повышенной академической стипендии лицея.</p>
+        </div>
+        <button class="context-modal-close" onclick="closeModal('modalAudit')">×</button>
+      </div>
+
+      <div id="audit-block"></div>
+    </div>
+  </div>
+
+  <!-- 5. Модальное окно: Афиша мероприятий и олимпиад -->
+  <div id="modalStudentEvents" class="context-modal-overlay">
+    <div class="context-modal-window wide">
+      <div class="context-modal-header">
+        <div>
+          <div class="section-tag">[ АКАДЕМИЧЕСКИЙ КАЛЕНДАРЬ ]</div>
+          <h2>АФИША МЕРОПРИЯТИЙ И ОЛИМПИАД</h2>
+          <p>Актуальные олимпиады, хакатоны и состязания, утверждённые завучем лицея.</p>
+        </div>
+        <button class="context-modal-close" onclick="closeModal('modalStudentEvents')">×</button>
+      </div>
+
+      <div id="studentEventsModalList" class="events-grid"></div>
+    </div>
+  </div>
+
+  <!-- Подключение скриптов данных, API, дипломов, 3D-перевеса и анимаций -->
   <script src="data/seed.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/csv.js"></script>
+  <script src="js/diploma.js"></script>
+  <script src="js/tilt.js"></script>
+  <script src="js/transitions.js"></script>
+
   <script>
     // Защита страницы: только ученик
     const me = Auth.guard("student");
@@ -114,26 +408,59 @@
     const RESULTS  = { winner: "Победитель", prize: "Призёр", participant: "Участник" };
     const STATUSES = { pending: "На проверке", approved: "Подтверждено", rejected: "Отклонено" };
 
-    // Экранирование пользовательского ввода, чтобы не ломать вёрстку
     const esc = s => String(s).replace(/[&<>"]/g,
       ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 
-    /**
-     * Показать сообщение пользователю.
-     * @param {string} text  — текст сообщения
-     * @param {boolean} isError — ошибка (красный) или успех (золотой)
-     */
     function say(text, isError) {
       const m = document.getElementById("msg");
       m.textContent = text;
-      m.style.color = isError ? "#a33" : "#8a6d1f";
+      m.style.color = isError ? "#f87171" : "var(--primary)";
+      if (!isError) {
+        setTimeout(() => { m.textContent = ""; }, 4000);
+      }
     }
 
     /**
+     * Управление контекстными окнами (модальными окнами)
+     */
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Закрытие модального окна по клику на фон
+    document.querySelectorAll('.context-modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    // Закрытие по клавише Escape
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.context-modal-overlay.active').forEach(m => {
+          m.classList.remove('active');
+        });
+        document.body.style.overflow = '';
+      }
+    });
+
+    /**
      * Добавление нового достижения из формы.
-     * Считывает значения полей, вызывает api.achievements.create,
-     * показывает результат и перерисовывает страницу.
-     * @returns {false} — предотвращает отправку формы
      */
     function addAchievement() {
       const title    = document.getElementById("achTitle").value.trim();
@@ -157,9 +484,11 @@
           fileUrl:     fileUrl,
           description: desc
         });
-        say("Достижение отправлено на проверку", false);
 
-        // Очищаем форму после успешной отправки
+        say("✓ Достижение успешно отправлено на проверку завучу", false);
+        closeModal('modalSubmit');
+
+        // Очищаем форму
         document.getElementById("achTitle").value    = "";
         document.getElementById("achCategory").value = "";
         document.getElementById("achType").value     = "";
@@ -177,14 +506,12 @@
     }
 
     /**
-     * Экспорт портфолио: открывает новое окно с красиво отформатированным
-     * HTML-документом, который можно распечатать как PDF (Ctrl+P).
+     * Экспорт портфолио в PDF
      */
     function exportPortfolio() {
       const s = api.portfolio.summary(me.id);
       const u = s.user;
 
-      // Строки таблицы достижений (только подтверждённые)
       const approved = s.allAchievements.filter(a => a.status === "approved");
       const rows = approved.map(a =>
         `<tr>
@@ -197,13 +524,11 @@
         </tr>`
       ).join("");
 
-      // Сводка по категориям
       const catRows = Object.keys(CATS).map(key => {
         const c = s.categories[key];
         return `<tr><td>${CATS[key]}</td><td>${c.count}</td><td>${c.points}</td></tr>`;
       }).join("");
 
-      // HTML-документ портфолио для печати
       const html = `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -211,13 +536,13 @@
 <title>Портфолио — ${esc(u.name)}</title>
 <style>
   body { font: 13px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 30px; color: #0f172a; }
-  h1 { font-size: 1.4rem; font-weight: 700; border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 4px; }
+  h1 { font-size: 1.4rem; font-weight: 700; border-bottom: 2px solid #00BD7D; padding-bottom: 8px; margin-bottom: 4px; }
   h2 { font-size: 1.05rem; font-weight: 600; margin-top: 24px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
   table { width: 100%; border-collapse: collapse; margin-top: 8px; }
   th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
   th { font-weight: 600; color: #64748b; text-transform: uppercase; font-size: 11px; }
   .info { color: #64748b; margin-bottom: 16px; font-size: 13px; }
-  .total { font-size: 1.2rem; font-weight: 700; margin-top: 14px; color: #0284c7; }
+  .total { font-size: 1.2rem; font-weight: 700; margin-top: 14px; color: #00BD7D; }
   @media print { body { margin: 15px; } }
 </style>
 </head>
@@ -225,127 +550,267 @@
   <h1>Официальное портфолио достижений лицеиста</h1>
   <p class="info">Ученик: <b>${esc(u.name)}</b> | Класс: <b>${esc(u.class)}</b></p>
   <p class="total">Суммарный подтверждённый балл: ${s.totalPoints}</p>
-
   <h2>Сводка по категориям</h2>
   <table>
     <tr><th>Категория</th><th>Кол-во</th><th>Баллы</th></tr>
     ${catRows}
   </table>
-
   <h2>Подтверждённые достижения (${approved.length})</h2>
   <table>
     <tr><th>Достижение</th><th>Категория</th><th>Уровень</th><th>Результат</th><th>Баллы</th><th>Дата</th></tr>
     ${rows}
   </table>
-
   <script>window.print();<\/script>
 </body>
 </html>`;
 
-      // Открываем портфолио в новом окне
       const w = window.open("", "_blank");
       w.document.write(html);
       w.document.close();
     }
 
     /**
-     * Перерисовка всех блоков страницы по текущим данным из API.
-     * 1. Имя ученика в шапке
-     * 2. Сводка прогресса (общие баллы и по категориям)
-     * 3. Таблица всех достижений
+     * Перерисовка данных страницы
      */
     function render() {
       // Имя и класс в шапке
-      document.getElementById("who").textContent = me.name + ", " + me.class;
+      document.getElementById("who").textContent = `${me.name} (${me.class})`;
+      const badgeCls = document.getElementById("badgeClass");
+      if (badgeCls) badgeCls.textContent = `КЛАСС ${me.class}`;
 
-      // Получаем полную сводку из API
       const s = api.portfolio.summary(me.id);
 
-      // --- Блок прогресса ---
-      // Общая статистика и разбивка по категориям
+      // --- Блок прогресса: 4 карточки метрик ---
       let statsHtml = `<div class="stats" style="margin-bottom:16px">
         <div><b>${s.totalPoints}</b><span>суммарных баллов</span></div>
-        <div><b>${s.totalAchievements}</b><span>подтверждено</span></div>
+        <div><b>${s.totalAchievements}</b><span>подтверждено наград</span></div>
         <div><b>${s.pending}</b><span>на проверке</span></div>
         <div><b>${s.rejected}</b><span>отклонено</span></div>
       </div>`;
 
-      // Сводка по каждой категории
-      statsHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px">';
+      // Разделы по предметам
+      statsHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">';
       for (const key of Object.keys(CATS)) {
         const c = s.categories[key];
-        statsHtml += `<div class="cat-card-item">
-          <div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">${CATS[key]}</div>
-          <div style="font-size:1.5rem;font-weight:700;color:#fff;margin:4px 0">${c.points} <span style="font-size:0.85rem;font-weight:400;color:var(--text-muted)">б.</span></div>
+        statsHtml += `<div class="cat-card-item" data-tilt>
+          <div style="font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">${CATS[key]}</div>
+          <div style="font-family:'Oswald',sans-serif;font-size:1.45rem;font-weight:700;color:var(--primary);margin:2px 0">${c.points} <span style="font-size:0.75rem;font-family:'Poppins',sans-serif;font-weight:400;color:var(--text-muted)">б.</span></div>
           <div class="hint">${c.count} подтверждено</div>
         </div>`;
       }
       statsHtml += '</div>';
       document.getElementById("progress-stats").innerHTML = statsHtml;
 
-      // --- Блок геймификации и бейджей ---
+      // --- Модальное окно геймификации ---
       const game = api.gamification.userBadges(me.id);
-      let gameHtml = `<div style="margin-bottom:14px">
+      let gameHtml = `<div style="margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <b style="color:#fff">Статус: ${game.level.name} (${game.level.title})</b>
-          <span class="hint">${s.totalPoints} / ${game.level.nextPoints} баллов</span>
+          <b style="font-family:'Oswald',sans-serif;font-size:1.05rem;text-transform:uppercase;color:var(--text-main)">РАНГ: ${game.level.name} (${game.level.title})</b>
+          <span class="badge-mono" style="color:var(--primary);font-size:0.8rem">${s.totalPoints} / ${game.level.nextPoints} Б.</span>
         </div>
         <progress value="${Math.min(s.totalPoints, game.level.nextPoints)}" max="${game.level.nextPoints}"></progress>
       </div>`;
 
       if (game.badges.length > 0) {
-        gameHtml += '<div style="display:flex;gap:12px;flex-wrap:wrap">';
+        gameHtml += '<div style="display:flex;gap:10px;flex-wrap:wrap">';
         for (const b of game.badges) {
-          gameHtml += `<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px" title="${esc(b.desc)}">
+          gameHtml += `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface-sunken);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)" title="${esc(b.desc)}">
             <span style="font-size:1.4rem">${b.icon}</span>
-            <div><b style="font-size:.85rem;color:#fff">${esc(b.title)}</b><br><small class="hint">${esc(b.desc)}</small></div>
+            <div><b style="font-size:.86rem;color:var(--text-main)">${esc(b.title)}</b><br><small class="hint">${esc(b.desc)}</small></div>
           </div>`;
         }
         gameHtml += '</div>';
       } else {
-        gameHtml += '<p class="hint">Участвуйте в олимпиадах и проектах, чтобы открыть первые бейджи!</p>';
+        gameHtml += '<p class="hint">Участвуйте в олимпиадах и турнирах, чтобы открыть бейджи!</p>';
       }
       document.getElementById("gamification-block").innerHTML = gameHtml;
 
-      // --- Блок ИИ-помощника ---
-      const ai = api.assistant.recommend(me.id);
-      let aiHtml = `<div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);padding:18px;border-radius:12px">
-        <p style="margin:0 0 10px;color:#fff;font-weight:600">📊 Академический аудит для ${esc(ai.studentName)}:</p>
-        <ul style="padding-left:18px;margin:0">`;
-      for (const tip of ai.tips) {
-        const formattedTip = esc(tip).replace(/\*\*(.*?)\*\*/g, '<b style="color:var(--accent)">$1</b>');
-        aiHtml += `<li style="margin-bottom:8px;border:none;padding:0;color:var(--text-main);line-height:1.5">${formattedTip}</li>`;
-      }
-      aiHtml += `</ul></div>`;
-      document.getElementById("assistant-block").innerHTML = aiHtml;
+      // --- Модальное окно аудита ---
+      const audit = api.academic.audit(me.id);
+      let auditHtml = `<div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-family:'Oswald',sans-serif;font-size:0.95rem;color:var(--text-main);text-transform:uppercase">
+            ${audit.scholarshipReady ? '🏆 СТИПЕНДИАЛЬНЫЙ ПОРОГ ПРЕОДОЛЁН' : '📊 КВАЛИФИКАЦИЯ НА СТИПЕНДИЮ'}
+          </span>
+          <span class="badge-mono" style="color:var(--primary);font-size:0.85rem;font-weight:700">${audit.currentPoints} / ${audit.targetScholarship} б.</span>
+        </div>
+        <progress value="${Math.min(audit.currentPoints, audit.targetScholarship)}" max="${audit.targetScholarship}"></progress>
+        <p style="font-size:0.86rem;color:var(--text-muted);margin:10px 0 16px">
+          ${audit.scholarshipReady
+            ? 'Повышенная академическая стипендия лицея одобрена на следующий семестр.'
+            : `До повышенной академической стипендии осталось набрать <b style="color:var(--primary)">${audit.ptsNeeded} баллов</b>.`}
+        </p>
 
-      // --- Таблица достижений ---
+        <div style="border-top:1px solid var(--border-subtle);padding-top:14px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:0.76rem;color:var(--primary);margin-bottom:10px;font-weight:700">
+            [КАЛЕНДАРЬ БЛИЖАЙШИХ ОЛИМПИАД И СОРЕВНОВАНИЙ]:
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">`;
+
+      for (const ev of audit.calendar) {
+        auditHtml += `<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.84rem;background:var(--surface-sunken);padding:10px 14px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle)">
+          <div>
+            <span class="badge-mono" style="color:var(--primary);font-weight:700;margin-right:8px">${ev.date}</span>
+            <span style="color:var(--text-main);font-weight:500">${esc(ev.title)}</span>
+          </div>
+          <span class="badge-mono" style="color:var(--text-muted)">${ev.pts}</span>
+        </div>`;
+      }
+
+      auditHtml += `</div></div></div>`;
+      document.getElementById("audit-block").innerHTML = auditHtml;
+
+      // --- Таблица моих достижений ---
       const achRows = s.allAchievements.map(a => {
         const statusLabel = STATUSES[a.status] || a.status;
         const comment = a.status === "rejected" && a.comment
-          ? `<br><small style="color:var(--red)">Причина: ${esc(a.comment)}</small>` : "";
+          ? `<br><small style="color:var(--danger)">Причина: ${esc(a.comment)}</small>` : "";
 
         const fileLink = a.fileUrl
-          ? `<a href="${esc(a.fileUrl)}" target="_blank" style="font-size:.85rem;color:var(--accent);text-decoration:none">📄 Диплом</a>`
+          ? `<a href="${esc(a.fileUrl)}" target="_blank" style="font-size:.82rem;color:var(--primary);font-weight:600;text-decoration:none">📄 СКАН</a>`
           : `<span class="hint">—</span>`;
 
+        const diplomaBtn = a.status === "approved"
+          ? `<button type="button" class="top-nav-btn primary" style="padding:4px 10px;font-size:0.75rem;" onclick="downloadAchDiploma('${a.id}')">📥 Скачать PNG</button>`
+          : `<span class="hint">После проверки</span>`;
+
         return `<tr>
-          <td><b style="color:#fff">${esc(a.title)}</b></td>
+          <td><b style="color:var(--text-main)">${esc(a.title)}</b></td>
           <td><span class="tag ${a.category}">${CATS[a.category] || a.category}</span></td>
           <td>${LEVELS[a.level] || a.level}</td>
           <td><span class="tag ${a.result}">${RESULTS[a.result] || a.result}</span></td>
-          <td><b style="color:var(--accent)">+${a.points}</b></td>
+          <td><b style="font-family:'Oswald',sans-serif;font-size:1.1rem;color:var(--primary)">+${a.points}</b></td>
           <td>${fileLink}</td>
+          <td>${diplomaBtn}</td>
           <td><span class="tag ${a.status}">${statusLabel}</span>${comment}</td>
         </tr>`;
       }).join("");
 
       document.getElementById("myAchievements").innerHTML =
-        `<tr><th>Достижение</th><th>Категория</th><th>Уровень</th><th>Результат</th><th>Баллы</th><th>Подтверждение</th><th>Статус</th></tr>` + achRows;
+        `<tr><th>Достижение</th><th>Категория</th><th>Уровень</th><th>Результат</th><th>Баллы</th><th>Скан</th><th>Диплом</th><th>Статус</th></tr>` + (achRows || '<tr><td colspan="8" class="hint" style="text-align:center;padding:24px;">Пока нет поданных достижений. Нажмите «Подать достижение», чтобы отправить грамоту.</td></tr>');
+
+      // --- Афиша мероприятий лицея ---
+      renderStudentEvents();
     }
 
-    // Первичная отрисовка, если пользователь авторизован
+    function renderStudentEvents() {
+      const list = api.events.list();
+      const tag = document.getElementById("tileStudentEventsTag");
+      if (tag) tag.textContent = `[${list.length} СОБЫТИЙ]`;
+
+      const renderCard = (ev) => {
+        const bannerStyle = ev.imageUrl ? `background-image:url('${esc(ev.imageUrl)}');` : '';
+        const hasImgClass = ev.imageUrl ? 'has-img' : '';
+        const catName = CATS[ev.category] || esc(ev.category);
+        const regBtn = ev.registrationLink ? `<a href="${esc(ev.registrationLink)}" target="_blank" class="top-nav-btn primary" style="padding:4px 10px;font-size:0.75rem;">🔗 Регистрация</a>` : '';
+
+        return `
+          <div class="event-poster-card" data-tilt>
+            <div class="event-poster-banner ${hasImgClass}" style="${bannerStyle}">
+              <span class="event-poster-level-top">${esc(ev.level || 'Региональный')}</span>
+              <span class="event-poster-badge-top">${esc(ev.badgeText || 'АФИША')}</span>
+            </div>
+            <div>
+              <span class="tag ${ev.category}" style="margin-bottom:8px; display:inline-block;">${catName}</span>
+              <h4 class="event-poster-title">${esc(ev.title)}</h4>
+              <div class="event-poster-meta">
+                <div class="event-poster-meta-item">
+                  <span>🗓</span>
+                  <span><b>Дата:</b> ${esc(ev.date)}</span>
+                </div>
+                <div class="event-poster-meta-item">
+                  <span>📍</span>
+                  <span><b>Место:</b> ${esc(ev.place || 'Лицей')}</span>
+                </div>
+              </div>
+              <p class="event-poster-desc">${esc(ev.description || 'Подробности состязания уточняйте у куратора.')}</p>
+            </div>
+            <div class="event-poster-footer">
+              <span class="event-poster-points-tag">⭐ ${esc(ev.pointsAward || '+20 б.')}</span>
+              <div class="event-poster-actions">
+                ${regBtn}
+                <button class="top-nav-btn" style="padding:4px 10px;font-size:0.75rem;" onclick="prefillSubmit('${esc(ev.title)}', '${ev.category}')">➕ Подать диплом</button>
+              </div>
+            </div>
+          </div>
+        `;
+      };
+
+      const dashContainer = document.getElementById("studentEventsDashboardList");
+      if (dashContainer) {
+        dashContainer.innerHTML = list.slice(0, 3).map(renderCard).join("") || '<p class="hint">Анонсов пока нет.</p>';
+      }
+
+      const modalContainer = document.getElementById("studentEventsModalList");
+      if (modalContainer) {
+        modalContainer.innerHTML = list.map(renderCard).join("") || '<p class="hint">Анонсов пока нет.</p>';
+      }
+
+      if (window.initTilt) window.initTilt();
+    }
+
+    function prefillSubmit(title, cat) {
+      closeModal('modalStudentEvents');
+      openModal('modalSubmit');
+      document.getElementById('achTitle').value = title;
+      if (cat) document.getElementById('achCat').value = cat;
+    }
+
+    function forceStudentSync() {
+      say("🔄 Синхронизация с ботом...", false);
+      api.sync(() => {
+        render();
+        say("✓ Данные синхронизированы с Telegram-ботом!", false);
+      });
+    }
+
+    function downloadAchDiploma(id) {
+      const ach = api.achievements.get(id);
+      if (!ach) return alert("Достижение не найдено");
+      DiplomaGenerator.download({
+        name: me.name,
+        title: ach.title,
+        category: ach.category,
+        result: ach.result,
+        date: ach.date
+      });
+    }
+
+    function downloadDiplomaTemplate(resultType) {
+      const myAchs = api.achievements.list({ userId: me.id });
+      const matching = myAchs.find(a => a.result === resultType && a.status === "approved")
+        || myAchs.find(a => a.result === resultType)
+        || myAchs[0]
+        || { title: "Всероссийская олимпиада школьников (ВсОШ)", category: "informatics", date: new Date().toISOString().slice(0, 10) };
+
+      DiplomaGenerator.download({
+        name: me.name,
+        title: matching.title || "Всероссийская олимпиада школьников (ВсОШ)",
+        category: matching.category || "informatics",
+        result: resultType,
+        date: matching.date || new Date().toISOString().slice(0, 10)
+      });
+    }
+
     if (me) render();
+
+    window.addEventListener('lyceum:db-synced', () => {
+      if (me) render();
+    });
+
+    window.addEventListener('lyceum:server-status', (e) => {
+      const badge = document.getElementById("studentSyncBadge");
+      if (!badge) return;
+      if (e.detail && e.detail.online) {
+        badge.textContent = "БОТ LIVE";
+        badge.className = "sync-status-pill sync-online";
+        badge.title = "Связь с единым сервером и Telegram-ботом активна";
+      } else {
+        badge.textContent = "ОФФЛАЙН КЭШ";
+        badge.className = "sync-status-pill sync-offline";
+        badge.title = "Сервер временно недоступен. Запустите run_bot.bat или run_server.bat";
+      }
+    });
   </script>
 </body>
 </html>

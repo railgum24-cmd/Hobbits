@@ -1,0 +1,518 @@
+{
+  "users": [
+    {
+      "id": "admin-1",
+      "name": "Ильдар Маратович",
+      "class": null,
+      "role": "admin",
+      "login": "admin",
+      "password": "admin2026"
+    },
+    {
+      "id": "user-1",
+      "name": "Гумеров Раиль",
+      "class": "9Б",
+      "role": "student",
+      "login": "Rail",
+      "password": "2026"
+    },
+    {
+      "id": "user-2",
+      "name": "Якубов Амир",
+      "class": "9Б",
+      "role": "student",
+      "login": "Amir",
+      "password": "2026"
+    },
+    {
+      "id": "user-3",
+      "name": "Фаррахов Ислам",
+      "class": "9Б",
+      "role": "student",
+      "login": "Islam",
+      "password": "2026"
+    },
+    {
+      "id": "user-4",
+      "name": "Биктагиров Самир",
+      "class": "9Б",
+      "role": "student",
+      "login": "Samir",
+      "password": "2026"
+    },
+    {
+      "id": "user-5",
+      "name": "Авдошин Радислав",
+      "class": "9Б",
+      "role": "student",
+      "login": "Radislav",
+      "password": "2026"
+    },
+    {
+      "id": "user-6",
+      "name": "Яруллин Самат",
+      "class": "9Б",
+      "role": "student",
+      "login": "Samat",
+      "password": "2026"
+    },
+    {
+      "id": "user-7",
+      "name": "Хасанова Алия",
+      "class": "10А",
+      "role": "student",
+      "login": "Aliya",
+      "password": "2026"
+    },
+    {
+      "id": "user-8",
+      "name": "Загиров Тимур",
+      "class": "11Б",
+      "role": "student",
+      "login": "Timur",
+      "password": "2026"
+    },
+    {
+      "id": "user-9",
+      "name": "Валиуллина Камила",
+      "class": "9А",
+      "role": "student",
+      "login": "Kamila",
+      "password": "2026"
+    }
+  ],
+  "achievements": [
+    {
+      "id": "ach-1",
+      "userId": "user-1",
+      "title": "Олимпиада по физике «Росатом»",
+      "category": "physics",
+      "type": "olympiad",
+      "level": "region",
+      "result": "winner",
+      "points": 50,
+      "date": "2026-02-14",
+      "status": "approved",
+      "verifiedBy": "admin-1",
+      "verifiedAt": "2026-02-20",
+      "comment": "Отлично! Диплом подтверждён.",
+      "description": "Победитель регионального этапа олимпиады по физике «Росатом» среди 9 классов."
+    },
+    {
+      "id": "ach-2",
+      "userId": "user-2",
+      "title": "Городская олимпиада по математике",
+      "category": "math",
+      "type": "olympiad",
+      "level": "city",
+      "result": "prize",
+      "points": 25,
+      "date": "2026-01-20",
+      "status": "approved",
+      "verifiedBy": "admin-1",
+      "verifiedAt": "2026-01-25",
+      "comment": "Призёр, диплом загружен.",
+      "description": "Призёр (2-е место) городской олимпиады по математике."
+    },
+    {
+      "id": "ach-3",
+      "userId": "user-3",
+      "title": "Хакатон «Digital Skills»",
+      "category": "informatics",
+      "type": "competition",
+      "level": "region",
+      "result": "winner",
+      "points": 40,
+      "date": "2026-03-10",
+      "status": "approved",
+      "verifiedBy": "admin-1",
+      "verifiedAt": "2026-03-15",
+      "comment": "Победа подтверждена организатором.",
+      "description": "Команда заняла 1-е место на региональном хакатоне по программированию."
+    },
+    {
+      "id": "ach-4",
+      "userId": "user-7",
+      "title": "Научно-практическая конференция «Старт в науку»",
+      "category": "project",
+      "type": "conference",
+      "level": "city",
+      "result": "winner",
+      "points": 35,
+      "date": "2026-04-05",
+      "status": "approved",
+      "verifiedBy": "admin-1",
+      "verifiedAt": "2026-04-10",
+      "comment": "Диплом 1-й степени подтверждён.",
+      "description": "Лучший доклад на городской научно-практической конференции, секция «Экология»."
+    },
+    {
+      "id": "ach-5",
+      "userId": "user-8",
+      "title": "Всероссийская олимпиада по информатике (региональный этап)",
+      "category": "informatics",
+      "type": "olympiad",
+      "level": "region",
+      "result": "prize",
+      "points": 35,
+      "date": "2026-01-30",
+      "status": "approved",
+      "verifiedBy": "admin-1",
+      "verifiedAt": "2026-02-05",
+      "comment": "Призёр, протокол проверен.",
+      "description": "Призёр регионального этапа ВсОШ по информатике, 11 класс."
+    },
+    {
+      "id": "ach-6",
+      "userId": "user-4",
+      "title": "Школьная олимпиада по физике",
+      "category": "physics",
+      "type": "olympiad",
+      "level": "school",
+      "result": "winner",
+      "points": 20,
+      "date": "2025-11-15",
+      "status": "approved",
+      "verifiedBy": "admin-1",
+      "verifiedAt": "2025-11-18",
+      "comment": "Протокол школьного этапа подтверждён.",
+      "description": "Победитель школьного этапа олимпиады по физике."
+    },
+    {
+      "id": "ach-7",
+      "userId": "user-6",
+      "title": "Волонтёрская акция «Чистый берег»",
+      "category": "volunteering",
+      "type": "volunteering",
+      "level": "city",
+      "result": "participant",
+      "points": 10,
+      "date": "2026-05-20",
+      "status": "approved",
+      "verifiedBy": "admin-1",
+      "verifiedAt": "2026-05-22",
+      "comment": "Благодарственное письмо получено.",
+      "description": "Участие в городской экологической акции по очистке берега реки."
+    },
+    {
+      "id": "ach-8",
+      "userId": "user-5",
+      "title": "Региональный конкурс проектов «IT-решения»",
+      "category": "informatics",
+      "type": "project",
+      "level": "region",
+      "result": "prize",
+      "points": 30,
+      "date": "2026-09-25",
+      "status": "pending",
+      "verifiedBy": null,
+      "verifiedAt": null,
+      "comment": "",
+      "description": "Проект «Умное расписание» занял 2-е место на региональном конкурсе."
+    },
+    {
+      "id": "ach-9",
+      "userId": "user-1",
+      "title": "Городская олимпиада по математике",
+      "category": "math",
+      "type": "olympiad",
+      "level": "city",
+      "result": "winner",
+      "points": 35,
+      "date": "2026-10-02",
+      "status": "pending",
+      "verifiedBy": null,
+      "verifiedAt": null,
+      "comment": "",
+      "description": "Победитель городской олимпиады по математике среди 9 классов."
+    },
+    {
+      "id": "ach-10",
+      "userId": "user-9",
+      "title": "Школьная научная конференция",
+      "category": "project",
+      "type": "conference",
+      "level": "school",
+      "result": "prize",
+      "points": 15,
+      "date": "2026-10-10",
+      "status": "pending",
+      "verifiedBy": null,
+      "verifiedAt": null,
+      "comment": "",
+      "description": "Доклад «Фракталы в природе» на школьной конференции, 2-е место."
+    },
+    {
+      "id": "ach-11",
+      "userId": "user-2",
+      "title": "Волонтёрский проект «Помощь ветеранам»",
+      "category": "volunteering",
+      "type": "volunteering",
+      "level": "school",
+      "result": "participant",
+      "points": 5,
+      "date": "2026-10-15",
+      "status": "pending",
+      "verifiedBy": null,
+      "verifiedAt": null,
+      "comment": "",
+      "description": "Организация поздравительных открыток для ветеранов лицея."
+    },
+    {
+      "id": "ach-12",
+      "userId": "user-8",
+      "title": "Федеральный конкурс «Большие вызовы»",
+      "category": "project",
+      "type": "competition",
+      "level": "federal",
+      "result": "participant",
+      "points": 20,
+      "date": "2026-09-18",
+      "status": "pending",
+      "verifiedBy": null,
+      "verifiedAt": null,
+      "comment": "",
+      "description": "Участие в финале всероссийского конкурса проектов «Большие вызовы»."
+    },
+    {
+      "id": "ach-13",
+      "userId": "user-3",
+      "title": "Олимпиада по математике «Ломоносов»",
+      "category": "math",
+      "type": "olympiad",
+      "level": "federal",
+      "result": "prize",
+      "points": 0,
+      "date": "2026-03-28",
+      "status": "rejected",
+      "verifiedBy": "admin-1",
+      "verifiedAt": "2026-04-02",
+      "comment": "Не предоставлено подтверждение. Загрузите скан диплома.",
+      "description": "Заявка на призёрство в олимпиаде «Ломоносов» по математике."
+    },
+    {
+      "id": "ach-14",
+      "userId": "user-5",
+      "title": "Городской турнир по робототехнике",
+      "category": "informatics",
+      "type": "competition",
+      "level": "city",
+      "result": "winner",
+      "points": 0,
+      "date": "2026-05-12",
+      "status": "rejected",
+      "verifiedBy": "admin-1",
+      "verifiedAt": "2026-05-18",
+      "comment": "Не предоставлено подтверждение. Результат не найден в протоколе соревнований.",
+      "description": "Заявка на победу в городском турнире по робототехнике."
+    },
+    {
+      "id": "ach-1792798060",
+      "userId": "user-3",
+      "title": "Привет",
+      "category": "project",
+      "type": "olympiad",
+      "level": "school",
+      "result": "winner",
+      "points": 15,
+      "date": "2026-10-24",
+      "status": "pending",
+      "verifiedBy": null,
+      "verifiedAt": null,
+      "comment": "",
+      "description": "Подано через Telegram-бот HobbitBot (Фаррахов Ислам)"
+    }
+  ],
+  "pointsTable": {
+    "olympiad": {
+      "school": {
+        "winner": 20,
+        "prize": 15,
+        "participant": 5
+      },
+      "city": {
+        "winner": 35,
+        "prize": 25,
+        "participant": 10
+      },
+      "region": {
+        "winner": 50,
+        "prize": 35,
+        "participant": 15
+      },
+      "federal": {
+        "winner": 70,
+        "prize": 50,
+        "participant": 25
+      }
+    },
+    "competition": {
+      "school": {
+        "winner": 15,
+        "prize": 10,
+        "participant": 5
+      },
+      "city": {
+        "winner": 30,
+        "prize": 20,
+        "participant": 10
+      },
+      "region": {
+        "winner": 40,
+        "prize": 30,
+        "participant": 15
+      },
+      "federal": {
+        "winner": 60,
+        "prize": 40,
+        "participant": 20
+      }
+    },
+    "conference": {
+      "school": {
+        "winner": 15,
+        "prize": 10,
+        "participant": 5
+      },
+      "city": {
+        "winner": 35,
+        "prize": 25,
+        "participant": 10
+      },
+      "region": {
+        "winner": 45,
+        "prize": 30,
+        "participant": 15
+      },
+      "federal": {
+        "winner": 60,
+        "prize": 45,
+        "participant": 20
+      }
+    },
+    "project": {
+      "school": {
+        "winner": 15,
+        "prize": 10,
+        "participant": 5
+      },
+      "city": {
+        "winner": 30,
+        "prize": 20,
+        "participant": 10
+      },
+      "region": {
+        "winner": 45,
+        "prize": 30,
+        "participant": 15
+      },
+      "federal": {
+        "winner": 60,
+        "prize": 40,
+        "participant": 20
+      }
+    },
+    "volunteering": {
+      "school": {
+        "winner": 10,
+        "prize": 5,
+        "participant": 5
+      },
+      "city": {
+        "winner": 20,
+        "prize": 15,
+        "participant": 10
+      },
+      "region": {
+        "winner": 30,
+        "prize": 20,
+        "participant": 15
+      },
+      "federal": {
+        "winner": 40,
+        "prize": 30,
+        "participant": 20
+      }
+    },
+    "exam": {
+      "school": {
+        "winner": 15,
+        "prize": 10,
+        "participant": 5
+      },
+      "city": {
+        "winner": 30,
+        "prize": 20,
+        "participant": 10
+      },
+      "region": {
+        "winner": 45,
+        "prize": 30,
+        "participant": 15
+      },
+      "federal": {
+        "winner": 60,
+        "prize": 45,
+        "participant": 25
+      }
+    }
+  },
+  "events": [
+    {
+      "id": "ev-hackathon-2026",
+      "title": "Хакатон «Вектор Инноваций 2026»",
+      "category": "informatics",
+      "level": "Региональный",
+      "date": "2026-11-20",
+      "place": "ИТ-Парк им. Б. Рамеева / Онлайн",
+      "pointsAward": "до +40 баллов",
+      "badgeText": "ХАКАТОН",
+      "imageUrl": "",
+      "registrationLink": "https://t.me/HobbitBot",
+      "description": "Командная разработка веб-сервисов и ИИ-агентов. Призовой фонд 100 000 руб., ценный мерч и менторство от ведущих IT-компаний.",
+      "createdAt": "2026-10-24"
+    },
+    {
+      "id": "ev-vsosh-phys-2026",
+      "title": "Всероссийская олимпиада школьников (Муниципальный этап)",
+      "category": "physics",
+      "level": "Городской",
+      "date": "2026-11-28",
+      "place": "Лицей №1 (Главный корпус)",
+      "pointsAward": "до +20 баллов",
+      "badgeText": "ВсОШ",
+      "imageUrl": "",
+      "registrationLink": "https://vos.olimpiada.ru",
+      "description": "Муниципальный этап ВсОШ по физике и астрономии. Победители получают путевку на региональный тур и повышенный рейтинг.",
+      "createdAt": "2026-10-24"
+    },
+    {
+      "id": "ev-step-future-2026",
+      "title": "Научно-практическая конференция «Шаг в будущее»",
+      "category": "project",
+      "level": "Региональный",
+      "date": "2026-12-10",
+      "place": "Конференц-зал Технопарка",
+      "pointsAward": "до +35 баллов",
+      "badgeText": "КОНФЕРЕНЦИЯ",
+      "imageUrl": "",
+      "registrationLink": "https://t.me/HobbitBot",
+      "description": "Защита исследовательских и инженерных проектов лицеистов перед профессорским составом ведущих технических университетов.",
+      "createdAt": "2026-10-24"
+    },
+    {
+      "id": "ev-robocup-2026",
+      "title": "Чемпионат по робототехнике и ИИ «RoboCup Junior»",
+      "category": "informatics",
+      "level": "Всероссийский",
+      "date": "2026-12-18",
+      "place": "Казань Экспо / Онлайн",
+      "pointsAward": "до +50 баллов",
+      "badgeText": "РОБОТОТЕХНИКА",
+      "imageUrl": "",
+      "registrationLink": "https://robocup.ru",
+      "description": "Соревнования автономных мобильных роботов и компьютерного зрения. Финалисты получают грантовую поддержку и приглашение на стажировку.",
+      "createdAt": "2026-10-24"
+    }
+  ]
+}

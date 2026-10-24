@@ -3,98 +3,169 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Админ-панель — Портал достижений лицея</title>
+  <title>Админ-панель завуча — Портал достижений лицея</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<!-- Шапка -->
+<!-- =================================================================
+     ВЕРХНЯЯ СТРОКА СТАТУСА (ПОЛНОРАЗМЕРНАЯ ЕДИНАЯ ПЛАШКА)
+     ================================================================= -->
 <header class="top">
-  <b>Портал достижений лицея</b>
-  <a href="rating.html">Рейтинг</a>
-  <a href="bot.html">Telegram-бот</a>
-  <span id="who"></span>
-  <button onclick="api.reset()">Сбросить демо</button>
-  <button onclick="Auth.logout()">Выйти</button>
+  <div class="top-left">
+    <a href="index.html" class="brand-title">
+      <span class="brand-dot"></span>
+      <span>ПОРТАЛ ДОСТИЖЕНИЙ ЛИЦЕЯ</span>
+    </a>
+    <span class="user-badge">
+      <span class="role-tag">ЗАВУЧ</span>
+      <span id="who">Ильдар Маратович</span>
+    </span>
+  </div>
+  <div class="top-right">
+    <div id="adminSyncBadge" class="sync-status-pill sync-online" title="Статус подключения к Telegram-боту и единой базе">
+      БОТ ПОДКЛЮЧЁН
+    </div>
+    <button onclick="forceAdminSync()" class="top-nav-btn" title="Принудительно синхронизировать с ботом">
+      <span>🔄</span>
+      <span>Синхронизировать</span>
+    </button>
+    <a href="rating.html" class="top-nav-btn">
+      <span>🏆</span>
+      <span>Общелицейский рейтинг</span>
+    </a>
+    <a href="https://t.me/HobbitBot" target="_blank" class="top-nav-btn">
+      <span>🤖</span>
+      <span>@HobbitBot</span>
+    </a>
+    <button onclick="confirmReset()" class="top-nav-btn warning">
+      <span>↺</span>
+      <span>Сбросить демо</span>
+    </button>
+    <button onclick="Auth.logout()" class="top-nav-btn danger">
+      <span>🚪</span>
+      <span>Выйти</span>
+    </button>
+  </div>
 </header>
 
-<!-- Основной контент -->
+<!-- =================================================================
+     ОСНОВНОЙ КОНТЕНТ: КАБИНЕТ АДМИНИСТРАТОРА / ЗАВУЧА
+     ================================================================= -->
 <main class="wrap">
 
-  <!-- Уведомление -->
+  <!-- Уведомление (toast) -->
   <div id="toast" class="toast" hidden></div>
 
-  <!-- Сводка -->
-  <section class="panel stats" id="stats">
+  <!-- ── СВОДКА КЛЮЧЕВЫХ ПОКАЗАТЕЛЕЙ (KPI STATS) ── -->
+  <section class="panel stats" id="stats" style="margin-bottom:24px;">
     <div><b id="statStudents">0</b><span>Всего учеников</span></div>
-    <div><b id="statTotal">0</b><span>Достижений</span></div>
-    <div><b id="statPending">0</b><span>На проверке</span></div>
-    <div><b id="statApproved">0</b><span>Подтверждено</span></div>
-    <div><b id="statRejected">0</b><span>Отклонено</span></div>
+    <div><b id="statPending" style="color:#f59e0b;">0</b><span>Заявок на проверке</span></div>
+    <div><b id="statApproved" style="color:var(--primary);">0</b><span>Подтверждено наград</span></div>
+    <div><b id="statNewUsers" style="color:#60a5fa;">0</b><span>Новых аккаунтов</span></div>
+    <div><b id="statTotal">0</b><span>Всего в реестре</span></div>
+    <div><b id="statRejected" style="color:#f87171;">0</b><span>Отклонено</span></div>
   </section>
 
-  <!-- Заявки на верификацию -->
-  <section class="panel">
-    <h2>Заявки на верификацию</h2>
-    <div class="table-wrap">
-      <table id="pending">
-        <thead>
-          <tr>
-            <th>Ученик</th>
-            <th>Класс</th>
-            <th>Достижение</th>
-            <th>Категория</th>
-            <th>Тип</th>
-            <th>Уровень</th>
-            <th>Результат</th>
-            <th>Баллы</th>
-            <th>Дата</th>
-            <th>Файл</th>
-            <th>Действие</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
+  <!-- ── СЕТКА ФУНКЦИОНАЛЬНЫХ ОКОН (ACTION TILES С ЭФФЕКТОМ ПЕРЕВЕСА) ── -->
+  <div style="margin-bottom: 8px;">
+    <div class="section-tag">[ МОДУЛИ АДМИНИСТРИРОВАНИЯ ]</div>
+    <h3 style="font-family:'Oswald',sans-serif; font-size:1.35rem; color:#fff; margin:0 0 4px; text-transform:uppercase;">
+      РАБОЧИЕ СТАНЦИИ ЗАВУЧА
+    </h3>
+    <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">
+      Каждая функция вынесена в изолированное контекстное окно с приятным размытием фона.
+    </p>
+  </div>
 
-  <!-- Добавить достижение ученику -->
-  <section class="panel">
-    <h2>Добавить достижение ученику</h2>
-    <form id="adminForm" onsubmit="event.preventDefault();addByAdmin()">
-      <div class="form-grid">
-        <label>Ученик
-          <select id="adminStudent" required></select>
-        </label>
-        <label>Название
-          <input id="adminTitle" required placeholder="Название достижения">
-        </label>
-        <label>Категория
-          <select id="adminCat"></select>
-        </label>
-        <label>Тип
-          <select id="adminType"></select>
-        </label>
-        <label>Уровень
-          <select id="adminLevel"></select>
-        </label>
-        <label>Результат
-          <select id="adminResult"></select>
-        </label>
-        <label>Дата
-          <input id="adminDate" type="date" required>
-        </label>
-        <label class="full">Описание
-          <textarea id="adminDesc" rows="2" placeholder="Описание (необязательно)"></textarea>
-        </label>
+  <div class="action-tiles-grid">
+    
+    <!-- Плитка 1: Очередь на верификацию -->
+    <div class="action-tile" onclick="openModal('modalPending')" data-tilt>
+      <div class="action-tile-top">
+        <span class="action-tile-icon">📥</span>
+        <span class="action-tile-tag" id="tilePendingTag">[0 НА ПРОВЕРКЕ]</span>
       </div>
-      <p style="margin-top:12px"><button type="submit">Добавить (подтверждённое)</button></p>
-    </form>
-  </section>
+      <div>
+        <h4 class="action-tile-title">ВЕРИФИКАЦИЯ ЗАЯВОК</h4>
+        <p class="action-tile-sub">Проверка грамот и дипломов от учеников из сайта и Telegram-бота с начислением баллов.</p>
+      </div>
+      <span class="action-tile-arrow">Открыть очередь заявок →</span>
+    </div>
 
-  <!-- Все достижения -->
-  <section class="panel">
-    <h2>Все достижения</h2>
+    <!-- Плитка 2: Добавить достижение -->
+    <div class="action-tile" onclick="openModal('modalAdd')" data-tilt>
+      <div class="action-tile-top">
+        <span class="action-tile-icon">➕</span>
+        <span class="action-tile-tag">[ПРИКАЗ]</span>
+      </div>
+      <div>
+        <h4 class="action-tile-title">ДОБАВИТЬ ДОСТИЖЕНИЕ</h4>
+        <p class="action-tile-sub">Внесение приказа о награждении конкретного лицеиста с мгновенным подтверждением.</p>
+      </div>
+      <span class="action-tile-arrow">Заполнить протокол →</span>
+    </div>
+
+    <!-- Плитка 3: Управление аккаунтами -->
+    <div class="action-tile" onclick="openModal('modalAccounts')" data-tilt>
+      <div class="action-tile-top">
+        <span class="action-tile-icon">👥</span>
+        <span class="action-tile-tag" id="tileAccountsTag">[АККАУНТЫ]</span>
+      </div>
+      <div>
+        <h4 class="action-tile-title">УПРАВЛЕНИЕ АККАУНТАМИ</h4>
+        <p class="action-tile-sub">Список новых пользователей с сайта. Возможность быстро очистить тестовые профили.</p>
+      </div>
+      <span class="action-tile-arrow">Управление доступом →</span>
+    </div>
+
+    <!-- Плитка 4: Экспорт отчётов -->
+    <div class="action-tile" onclick="openModal('modalExport')" data-tilt>
+      <div class="action-tile-top">
+        <span class="action-tile-icon">📊</span>
+        <span class="action-tile-tag">[ОТЧЁТЫ]</span>
+      </div>
+      <div>
+        <h4 class="action-tile-title">ЭКСПОРТ & АНАЛИТИКА</h4>
+        <p class="action-tile-sub">Выгрузка базы в CSV для педсовета, статистика по предметам и JSON-архив.</p>
+      </div>
+      <span class="action-tile-arrow">Открыть отчёты →</span>
+    </div>
+
+    <!-- Плитка 5: Афиши мероприятий -->
+    <div class="action-tile" onclick="openModal('modalEvents')" data-tilt>
+      <div class="action-tile-top">
+        <span class="action-tile-icon">📢</span>
+        <span class="action-tile-tag" id="tileEventsTag">[4 АФИШИ]</span>
+      </div>
+      <div>
+        <h4 class="action-tile-title">АФИШИ МЕРОПРИЯТИЙ</h4>
+        <p class="action-tile-sub">Публикация анонсов олимпиад, хакатонов и событий лицея для учеников и бота.</p>
+      </div>
+      <span class="action-tile-arrow">Управление афишами →</span>
+    </div>
+
+  </div>
+
+  <!-- ── ОСНОВНОЙ РЕЕСТР ДОСТИЖЕНИЙ (ЕДИНАЯ БАЗА) ── -->
+  <section class="panel" style="margin-top: 10px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+      <div>
+        <h2 style="margin:0;">ЕДИНЫЙ РЕЕСТР ДОСТИЖЕНИЙ ЛИЦЕЯ</h2>
+        <p style="font-size:0.86rem; color:var(--text-muted); margin:4px 0 0;">
+          Полный академический реестр всех проверенных и архивных олимпиадных состязаний.
+        </p>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="top-nav-btn primary" onclick="openModal('modalPending')">
+          <span>📥</span> <span>Очередь проверки</span>
+        </button>
+        <button class="top-nav-btn" onclick="exportCSV()">
+          <span>📄</span> <span>Скачать CSV-отчёт</span>
+        </button>
+      </div>
+    </div>
+
     <div class="table-wrap">
       <table id="allAch">
         <thead>
@@ -115,10 +186,286 @@
         <tbody></tbody>
       </table>
     </div>
-    <button onclick="exportCSV()">Скачать CSV-отчёт</button>
   </section>
 
 </main>
+
+<!-- =================================================================
+     КОНТЕКСТНЫЕ МОДАЛЬНЫЕ ОКНА ЗАВУЧА (С РАЗМЫТИЕМ ЗАДНЕГО ФОНА)
+     ================================================================= -->
+
+<!-- 1. Модальное окно: Заявки на верификацию -->
+<div id="modalPending" class="context-modal-overlay">
+  <div class="context-modal-window wide">
+    <div class="context-modal-header">
+      <div>
+        <div class="section-tag">[ АКАДЕМИЧЕСКАЯ ЭКСПЕРТИЗА ]</div>
+        <h2>ОЧЕРЕДЬ ВЕРИФИКАЦИИ ДИПЛОМОВ</h2>
+        <p>Заявки лицеистов, поданные через сайт и Telegram-бот @HobbitBot:</p>
+      </div>
+      <button class="context-modal-close" onclick="closeModal('modalPending')">×</button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="pending">
+        <thead>
+          <tr>
+            <th>Ученик</th>
+            <th>Класс</th>
+            <th>Достижение</th>
+            <th>Категория</th>
+            <th>Тип</th>
+            <th>Уровень</th>
+            <th>Результат</th>
+            <th>Баллы</th>
+            <th>Дата</th>
+            <th>Файл</th>
+            <th>Решение</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Модальное окно: Добавить достижение ученику -->
+<div id="modalAdd" class="context-modal-overlay">
+  <div class="context-modal-window">
+    <div class="context-modal-header">
+      <div>
+        <div class="section-tag">[ ОФИЦИАЛЬНЫЙ ПРИКАЗ ]</div>
+        <h2>ВНЕСТИ ДОСТИЖЕНИЕ УЧЕНИКУ</h2>
+        <p>Добавленная награда сразу отмечается как подтверждённая администрацией.</p>
+      </div>
+      <button class="context-modal-close" onclick="closeModal('modalAdd')">×</button>
+    </div>
+
+    <form id="adminForm" onsubmit="event.preventDefault();addByAdmin()">
+      <div style="margin-bottom:14px;">
+        <label for="adminStudent">Выберите ученика</label>
+        <select id="adminStudent" required></select>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label for="adminTitle">Название состязания / олимпиады</label>
+        <input id="adminTitle" required placeholder="Например: ВсОШ по математике (финал)">
+      </div>
+
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div>
+          <label for="adminCat">Категория</label>
+          <select id="adminCat"></select>
+        </div>
+        <div>
+          <label for="adminType">Тип мероприятия</label>
+          <select id="adminType"></select>
+        </div>
+      </div>
+
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div>
+          <label for="adminLevel">Уровень</label>
+          <select id="adminLevel"></select>
+        </div>
+        <div>
+          <label for="adminResult">Результат</label>
+          <select id="adminResult"></select>
+        </div>
+      </div>
+
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div>
+          <label for="adminDate">Дата мероприятия</label>
+          <input id="adminDate" type="date" required>
+        </div>
+        <div>
+          <label for="adminDesc">Номер приказа / примечания</label>
+          <input id="adminDesc" placeholder="Приказ №...">
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:18px;">
+        <button type="button" class="top-nav-btn" onclick="closeModal('modalAdd')">Отмена</button>
+        <button type="submit" class="btn btn-primary">Внести в реестр →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 3. Модальное окно: Управление зарегистрированными аккаунтами -->
+<div id="modalAccounts" class="context-modal-overlay">
+  <div class="context-modal-window wide">
+    <div class="context-modal-header">
+      <div>
+        <div class="section-tag">[ РЕЕСТР ПОЛЬЗОВАТЕЛЕЙ ]</div>
+        <h2>ЗАРЕГИСТРИРОВАННЫЕ АККАУНТЫ</h2>
+        <p>Управление новыми аккаунтами лицеистов, созданными через сайт или бота:</p>
+      </div>
+      <button class="context-modal-close" onclick="closeModal('modalAccounts')">×</button>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+      <span class="hint">Удаление тестовых профилей без влияния на базовый состав классов:</span>
+      <div style="display:flex; gap:10px;">
+        <button class="top-nav-btn danger" onclick="deleteNewAccounts()">
+          <span>🗑️</span> <span>Удалить все новые аккаунты</span>
+        </button>
+        <button class="top-nav-btn" onclick="exportUsersJSON()">
+          <span>💾</span> <span>Выгрузить JSON</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="newUsersTable">
+        <thead>
+          <tr>
+            <th>Логин</th>
+            <th>ФИО Ученика</th>
+            <th>Класс</th>
+            <th>Дата регистрации</th>
+            <th>Заявок</th>
+            <th>Действие</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Модальное окно: Экспорт и аналитика -->
+<div id="modalExport" class="context-modal-overlay">
+  <div class="context-modal-window">
+    <div class="context-modal-header">
+      <div>
+        <div class="section-tag">[ ОТЧЁТНОСТЬ И АНАЛИТИКА ]</div>
+        <h2>ЭКСПОРТ & СВОДНЫЕ ОТЧЁТЫ</h2>
+        <p>Сформируйте официальную отчётность для методического совета и стипендиальной комиссии:</p>
+      </div>
+      <button class="context-modal-close" onclick="closeModal('modalExport')">×</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="padding:16px; background:var(--surface-sunken); border:1px solid var(--border-subtle); border-radius:var(--radius-sm);">
+        <b style="color:var(--text-main); font-size:0.95rem; display:block; margin-bottom:4px;">📄 Полная выгрузка достижений в CSV</b>
+        <p class="hint" style="margin-bottom:12px;">Содержит всех учеников, предметы, уровни, баллы, даты и статус верификации.</p>
+        <button class="top-nav-btn primary" onclick="exportCSV()">📥 Скачать achievements_report.csv</button>
+      </div>
+
+      <div style="padding:16px; background:var(--surface-sunken); border:1px solid var(--border-subtle); border-radius:var(--radius-sm);">
+        <b style="color:var(--text-main); font-size:0.95rem; display:block; margin-bottom:4px;">💾 Резервная копия базы пользователей (JSON)</b>
+        <p class="hint" style="margin-bottom:12px;">Архив зарегистрированных профилей для переноса в информационную систему школы.</p>
+        <button class="top-nav-btn" onclick="exportUsersJSON()">📥 Скачать registered_users.json</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. Модальное окно: Управление афишами мероприятий -->
+<div id="modalEvents" class="context-modal-overlay">
+  <div class="context-modal-window wide">
+    <div class="context-modal-header">
+      <div>
+        <div class="section-tag">[ АФИШИ И АНОНСЫ ]</div>
+        <h2>УПРАВЛЕНИЕ АФИШАМИ МЕРОПРИЯТИЙ</h2>
+        <p>Публикуйте анонсы олимпиад, хакатонов и лицейских турниров. Они сразу отобразятся на сайте и в Telegram-боте.</p>
+      </div>
+      <button class="context-modal-close" onclick="closeModal('modalEvents')">×</button>
+    </div>
+
+    <!-- Форма публикации новой афиши -->
+    <div style="background:var(--surface-sunken); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:20px; margin-bottom:24px;">
+      <h3 style="font-family:'Oswald',sans-serif; font-size:1.15rem; color:#fff; margin:0 0 12px; text-transform:uppercase;">
+        ➕ Создать новую афишу
+      </h3>
+      <form id="eventForm" onsubmit="event.preventDefault(); publishEvent();">
+        <div style="margin-bottom:12px;">
+          <label for="eventTitle">Название мероприятия *</label>
+          <input id="eventTitle" required placeholder="Например: Хакатон «Вектор Инноваций 2026»">
+        </div>
+
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div>
+            <label for="eventCategory">Предмет / Область *</label>
+            <select id="eventCategory">
+              <option value="informatics">💻 Информатика & ИИ</option>
+              <option value="physics">⚛️ Физика & Астрономия</option>
+              <option value="math">📐 Математика</option>
+              <option value="project">🚀 Научные проекты</option>
+              <option value="volunteering">🤝 Волонтёрство</option>
+            </select>
+          </div>
+          <div>
+            <label for="eventLevel">Уровень состязания *</label>
+            <select id="eventLevel">
+              <option value="Региональный">Региональный</option>
+              <option value="Всероссийский">Всероссийский</option>
+              <option value="Городской">Городской / Муниципальный</option>
+              <option value="Лицейский">Школьный / Лицейский</option>
+              <option value="Международный">Международный</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div>
+            <label for="eventDate">Дата проведения *</label>
+            <input id="eventDate" required placeholder="Например: 2026-11-20 или 15-18 ноября">
+          </div>
+          <div>
+            <label for="eventPlace">Место / Формат</label>
+            <input id="eventPlace" placeholder="ИТ-Парк / Лицей / Онлайн">
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div>
+            <label for="eventPoints">Ожидаемые баллы в рейтинг</label>
+            <input id="eventPoints" placeholder="Например: до +40 баллов">
+          </div>
+          <div>
+            <label for="eventBadge">Тип / Бейдж</label>
+            <input id="eventBadge" placeholder="ХАКАТОН / ВсОШ / КОНФЕРЕНЦИЯ">
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div>
+            <label for="eventRegLink">Ссылка на регистрацию / Подробнее</label>
+            <input id="eventRegLink" placeholder="https://t.me/HobbitBot или сайт состязания">
+          </div>
+          <div>
+            <label for="eventImgUrl">Ссылка на баннер / картинку (необязательно)</label>
+            <input id="eventImgUrl" placeholder="https://... или оставьте пустым для стиля Perspective">
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label for="eventDesc">Краткое описание для учеников</label>
+          <textarea id="eventDesc" rows="3" placeholder="Условия участия, формат, призовой фонд и для каких классов предназначено..."></textarea>
+        </div>
+
+        <button type="submit" class="top-nav-btn primary" style="width:100%; justify-content:center; padding:10px 16px; font-weight:600;">
+          📢 Опубликовать афишу в лицее и Telegram-боте
+        </button>
+      </form>
+    </div>
+
+    <!-- Список текущих афиш -->
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="font-family:'Oswald',sans-serif; font-size:1.15rem; color:#fff; margin:0; text-transform:uppercase;">
+          📋 Опубликованные афиши
+        </h3>
+        <span id="eventsCountBadge" class="tag" style="background:var(--primary-light); color:var(--primary); font-family:'JetBrains Mono',monospace;">0 афиш</span>
+      </div>
+      <div id="eventsAdminList" class="events-grid"></div>
+    </div>
+
+  </div>
+</div>
 
 <!-- Подключаемые скрипты -->
 <script src="data/seed.js"></script>
@@ -126,6 +473,9 @@
 <script src="js/api.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/csv.js"></script>
+<script src="js/diploma.js"></script>
+<script src="js/tilt.js"></script>
+<script src="js/transitions.js"></script>
 
 <script>
   /* ── Проверка прав: только admin ── */
@@ -138,23 +488,58 @@
   const RESULTS = { winner:"Победитель", prize:"Призёр", participant:"Участник" };
   const STATUSES= { pending:"На проверке", approved:"Подтверждено", rejected:"Отклонено" };
 
-  /* ── Экранирование HTML ── */
   const esc = s => String(s).replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 
-  /* ── Уведомление (toast) ── */
   function say(text, isError) {
     const t = document.getElementById("toast");
     t.textContent = text;
     t.className = "toast" + (isError ? " error" : " success");
     t.hidden = false;
-    setTimeout(() => { t.hidden = true; }, 3000);
+    setTimeout(() => { t.hidden = true; }, 3200);
   }
+
+  /**
+   * Управление контекстными окнами
+   */
+  function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
+  document.querySelectorAll('.context-modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.context-modal-overlay.active').forEach(m => {
+        m.classList.remove('active');
+      });
+      document.body.style.overflow = '';
+    }
+  });
 
   /* ── Подтверждение заявки ── */
   function approve(id) {
     try {
       api.achievements.approve(id, admin.id);
-      say("Подтверждено", false);
+      say("✓ Достижение успешно подтверждено", false);
     } catch (e) {
       say(e.message, true);
     }
@@ -163,11 +548,11 @@
 
   /* ── Отклонение заявки ── */
   function reject(id) {
-    const comment = prompt("Причина отклонения:");
+    const comment = prompt("Причина отклонения заявки:");
     if (!comment) return;
     try {
       api.achievements.reject(id, admin.id, comment);
-      say("Отклонено", false);
+      say("Заявка отклонена", false);
     } catch (e) {
       say(e.message, true);
     }
@@ -192,8 +577,9 @@
     }
     try {
       api.achievements.createByAdmin(data, admin.id);
-      say("Достижение добавлено и подтверждено", false);
+      say("✓ Достижение внесено в реестр и подтверждено", false);
       document.getElementById("adminForm").reset();
+      closeModal('modalAdd');
     } catch (e) {
       say(e.message, true);
     }
@@ -203,6 +589,54 @@
   /* ── Экспорт CSV-отчёта ── */
   function exportCSV() {
     downloadCSV(api.reports.rows(), "achievements_report.csv");
+  }
+
+  /* ── Подтверждение сброса демо ── */
+  function confirmReset() {
+    if (confirm("Сбросить базу данных до исходного состояния сидов? Все добавленные и подтверждённые данные вернутся к шаблону.")) {
+      api.reset();
+    }
+  }
+
+  /* ── Удаление ВСЕХ новых зарегистрированных аккаунтов ── */
+  function deleteNewAccounts() {
+    const newUsers = api.users.newUsers();
+    if (newUsers.length === 0) {
+      say("Новых зарегистрированных аккаунтов нет", false);
+      return;
+    }
+    if (confirm("Вы уверены, что хотите удалить ВСЕ новые зарегистрированные аккаунты (" + newUsers.length + " шт.) и все их заявки? Это действие необратимо.")) {
+      try {
+        const res = api.users.deleteNewUsers(admin.id);
+        say("Удалено новых аккаунтов: " + res.deletedUsers + ", связанных заявок: " + res.deletedAchievements, false);
+        render();
+      } catch (e) {
+        say(e.message, true);
+      }
+    }
+  }
+
+  /* ── Удаление отдельного аккаунта ── */
+  function deleteSingleAccount(id, name) {
+    if (confirm("Удалить аккаунт \"" + name + "\" и все связанные достижения?")) {
+      try {
+        api.users.delete(id, admin.id);
+        say("Аккаунт " + name + " успешно удалён", false);
+        render();
+      } catch (e) {
+        say(e.message, true);
+      }
+    }
+  }
+
+  /* ── Экспорт локальной базы аккаунтов в JSON ── */
+  function exportUsersJSON() {
+    try {
+      api.users.exportRegisteredJSON(admin.id);
+      say("База зарегистрированных аккаунтов выгружена в JSON", false);
+    } catch (e) {
+      say(e.message, true);
+    }
   }
 
   /* ── Заполнение select-справочника ── */
@@ -228,10 +662,8 @@
 
   /* ── Основная отрисовка всех блоков ── */
   function render() {
-    /* Имя админа в шапке */
     document.getElementById("who").textContent = admin.name;
 
-    /* Получаем данные */
     const students = api.users.list().filter(u => u.role === "student");
     const all      = api.achievements.list();
     const pending  = all.filter(a => a.status === "pending");
@@ -239,56 +671,85 @@
     const rejected = all.filter(a => a.status === "rejected");
 
     /* Сводка — карточки статистики */
+    const newUsersList = api.users.newUsers();
     document.getElementById("statStudents").textContent = students.length;
+    document.getElementById("statNewUsers").textContent = newUsersList.length;
     document.getElementById("statTotal").textContent    = all.length;
     document.getElementById("statPending").textContent  = pending.length;
     document.getElementById("statApproved").textContent = approved.length;
     document.getElementById("statRejected").textContent = rejected.length;
 
-    /* Таблица pending-заявок */
+    // Бейджи на Action Tiles
+    const pTag = document.getElementById("tilePendingTag");
+    if (pTag) pTag.textContent = `[${pending.length} НА ПРОВЕРКЕ]`;
+    const accTag = document.getElementById("tileAccountsTag");
+    if (accTag) accTag.textContent = `[${newUsersList.length} НОВЫХ]`;
+
+    /* Таблица pending-заявок в модальном окне */
     const pTbody = document.querySelector("#pending tbody");
     if (pending.length === 0) {
-      pTbody.innerHTML = '<tr><td colspan="11" class="empty">Нет заявок на проверке</td></tr>';
+      pTbody.innerHTML = '<tr><td colspan="11" class="empty" style="text-align:center;padding:24px;">Все заявки проверены. Новых заявок пока нет.</td></tr>';
     } else {
       pTbody.innerHTML = pending.map(a => {
         const uid = a.userId || a.studentId;
-        const fileCell = a.fileUrl ? '<a href="' + esc(a.fileUrl) + '" target="_blank" style="color:var(--accent);text-decoration:none">📄 Скан</a>' : '—';
+        const fileCell = a.fileUrl ? '<a href="' + esc(a.fileUrl) + '" target="_blank" style="color:var(--primary);font-weight:600;text-decoration:none">📄 СКАН</a>' : '—';
         return '<tr>'
-        + '<td><b style="color:#fff">' + studentName(uid) + '</b></td>'
+        + '<td><b style="color:var(--text-main)">' + studentName(uid) + '</b></td>'
         + '<td>' + studentClass(uid) + '</td>'
         + '<td>' + esc(a.title) + '</td>'
         + '<td><span class="tag ' + a.category + '">' + (CATS[a.category] || esc(a.category)) + '</span></td>'
         + '<td>' + (TYPES[a.type] || esc(a.type)) + '</td>'
         + '<td>' + (LEVELS[a.level] || esc(a.level)) + '</td>'
         + '<td><span class="tag ' + a.result + '">' + (RESULTS[a.result] || esc(a.result)) + '</span></td>'
-        + '<td><b style="color:var(--accent)">+' + (a.points ?? "0") + '</b></td>'
+        + '<td><b style="font-family:\'Oswald\',sans-serif;font-weight:700;color:var(--primary)">+' + (a.points ?? "0") + '</b></td>'
         + '<td>' + esc(a.date) + '</td>'
         + '<td>' + fileCell + '</td>'
-        + '<td class="actions">'
-          + '<button class="btn-approve approve" onclick="approve(\'' + a.id + '\')">✓ Принять</button>'
-          + '<button class="btn-reject reject"  onclick="reject(\'' + a.id + '\')">✗ Отклонить</button>'
+        + '<td class="actions" style="display:flex;gap:6px;">'
+          + '<button class="top-nav-btn primary" style="padding:4px 10px;font-size:0.75rem;" onclick="approve(\'' + a.id + '\')">✓ Принять</button>'
+          + '<button class="top-nav-btn danger" style="padding:4px 10px;font-size:0.75rem;" onclick="reject(\'' + a.id + '\')">✗ Отклонить</button>'
         + '</td>'
         + '</tr>';
       }).join("");
     }
 
-    /* Таблица всех достижений */
+    /* Таблица новых зарегистрированных аккаунтов в модальном окне */
+    const newUsers = api.users.newUsers();
+    const nuTbody = document.querySelector("#newUsersTable tbody");
+    if (newUsers.length === 0) {
+      nuTbody.innerHTML = '<tr><td colspan="6" class="empty" style="text-align:center;padding:24px;">Новых зарегистрированных аккаунтов нет (только базовый состав команды и сидов).</td></tr>';
+    } else {
+      nuTbody.innerHTML = newUsers.map(u => {
+        return '<tr>'
+          + '<td><code>' + esc(u.login) + '</code></td>'
+          + '<td><b style="color:var(--text-main)">' + esc(u.name) + '</b></td>'
+          + '<td>' + esc(u.class) + '</td>'
+          + '<td>' + (u.registeredAt || "Недавно") + '</td>'
+          + '<td><span class="tag">' + u.achievementsCount + '</span></td>'
+          + '<td><button class="top-nav-btn danger" style="padding:4px 10px;font-size:0.75rem;" onclick="deleteSingleAccount(\'' + u.id + '\', \'' + esc(u.name) + '\')">Удалить</button></td>'
+          + '</tr>';
+      }).join("");
+    }
+
+    /* Таблица всех достижений на главной панели */
     const aTbody = document.querySelector("#allAch tbody");
     if (all.length === 0) {
-      aTbody.innerHTML = '<tr><td colspan="11" class="empty">Достижений пока нет</td></tr>';
+      aTbody.innerHTML = '<tr><td colspan="11" class="empty" style="text-align:center;padding:24px;">Достижений пока нет в базе данных.</td></tr>';
     } else {
       aTbody.innerHTML = all.map(a => {
         const uid = a.userId || a.studentId;
-        const fileCell = a.fileUrl ? '<a href="' + esc(a.fileUrl) + '" target="_blank" style="color:var(--accent);text-decoration:none">📄 Скан</a>' : '—';
+        let fileCell = a.fileUrl ? '<a href="' + esc(a.fileUrl) + '" target="_blank" style="color:var(--primary);font-weight:600;text-decoration:none">📄 СКАН</a>' : '—';
+        if (a.status === 'approved') {
+          fileCell += ' <span style="color:var(--text-subtle)">|</span> <a href="#" onclick="downloadAchDiplomaAdmin(\'' + a.id + '\'); return false;" style="color:var(--primary);font-weight:600;text-decoration:none">📥 ДИПЛОМ</a>';
+        }
         return '<tr class="status-' + a.status + '">'
-        + '<td><b style="color:#fff">' + studentName(uid) + '</b></td>'
+        + '<td><b style="color:var(--text-main)">' + studentName(uid) + '</b></td>'
         + '<td>' + studentClass(uid) + '</td>'
         + '<td>' + esc(a.title) + '</td>'
         + '<td><span class="tag ' + a.category + '">' + (CATS[a.category] || esc(a.category)) + '</span></td>'
         + '<td>' + (TYPES[a.type] || esc(a.type)) + '</td>'
         + '<td>' + (LEVELS[a.level] || esc(a.level)) + '</td>'
         + '<td><span class="tag ' + a.result + '">' + (RESULTS[a.result] || esc(a.result)) + '</span></td>'
-        + '<td><b style="color:var(--accent)">+' + (a.points ?? "0") + '</b></td>'
+        + '<td><b style="font-family:\'Oswald\',sans-serif;font-weight:700;color:var(--primary)">+' + (a.points ?? "0") + '</b></td>'
         + '<td>' + esc(a.date) + '</td>'
         + '<td>' + fileCell + '</td>'
         + '<td><span class="tag ' + a.status + '">' + (STATUSES[a.status] || esc(a.status)) + '</span></td>'
@@ -307,10 +768,154 @@
     fillSelect("adminType",   TYPES);
     fillSelect("adminLevel",  LEVELS);
     fillSelect("adminResult", RESULTS);
+
+    /* Отрисовка афиш */
+    renderEvents();
   }
 
-  /* ── Запуск отрисовки при наличии прав ── */
+  /* ── Отрисовка списка афиш мероприятий ── */
+  function renderEvents() {
+    const list = api.events.list();
+    const tag = document.getElementById("tileEventsTag");
+    if (tag) tag.textContent = `[${list.length} АФИШ]`;
+
+    const countBadge = document.getElementById("eventsCountBadge");
+    if (countBadge) countBadge.textContent = `${list.length} афиш`;
+
+    const container = document.getElementById("eventsAdminList");
+    if (!container) return;
+
+    if (list.length === 0) {
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--text-muted);background:var(--surface-sunken);border:1px dashed var(--border-subtle);border-radius:var(--radius-sm);">Афиш пока нет. Опубликуйте первую афишу выше!</div>';
+      return;
+    }
+
+    container.innerHTML = list.map(ev => {
+      const bannerStyle = ev.imageUrl ? `background-image:url('${esc(ev.imageUrl)}');` : '';
+      const hasImgClass = ev.imageUrl ? 'has-img' : '';
+      const catName = CATS[ev.category] || esc(ev.category);
+      const regBtn = ev.registrationLink ? `<a href="${esc(ev.registrationLink)}" target="_blank" class="top-nav-btn primary" style="padding:4px 10px;font-size:0.75rem;">🔗 Ссылка</a>` : '';
+
+      return `
+        <div class="event-poster-card" data-tilt>
+          <div class="event-poster-banner ${hasImgClass}" style="${bannerStyle}">
+            <span class="event-poster-level-top">${esc(ev.level || 'Региональный')}</span>
+            <span class="event-poster-badge-top">${esc(ev.badgeText || 'АФИША')}</span>
+          </div>
+          <div>
+            <span class="tag ${ev.category}" style="margin-bottom:8px; display:inline-block;">${catName}</span>
+            <h4 class="event-poster-title">${esc(ev.title)}</h4>
+            <div class="event-poster-meta">
+              <div class="event-poster-meta-item">
+                <span>🗓</span>
+                <span><b>Дата:</b> ${esc(ev.date)}</span>
+              </div>
+              <div class="event-poster-meta-item">
+                <span>📍</span>
+                <span><b>Место:</b> ${esc(ev.place || 'Лицей')}</span>
+              </div>
+            </div>
+            <p class="event-poster-desc">${esc(ev.description || 'Нет подробного описания.')}</p>
+          </div>
+          <div class="event-poster-footer">
+            <span class="event-poster-points-tag">⭐ ${esc(ev.pointsAward || '+20 б.')}</span>
+            <div class="event-poster-actions">
+              ${regBtn}
+              <button class="top-nav-btn danger" style="padding:4px 10px;font-size:0.75rem;" onclick="deleteEvent('${ev.id}')">🗑 Удалить</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    if (window.initTilt) window.initTilt();
+  }
+
+  /* ── Публикация новой афиши ── */
+  function publishEvent() {
+    const data = {
+      title: document.getElementById("eventTitle").value.trim(),
+      category: document.getElementById("eventCategory").value,
+      level: document.getElementById("eventLevel").value,
+      date: document.getElementById("eventDate").value.trim(),
+      place: document.getElementById("eventPlace").value.trim() || "Лицей",
+      pointsAward: document.getElementById("eventPoints").value.trim() || "+20 баллов",
+      badgeText: document.getElementById("eventBadge").value.trim() || "ОЛИМПИАДА",
+      registrationLink: document.getElementById("eventRegLink").value.trim(),
+      imageUrl: document.getElementById("eventImgUrl").value.trim(),
+      description: document.getElementById("eventDesc").value.trim()
+    };
+
+    if (!data.title || !data.date) {
+      say("Заполните обязательные поля (название и дата)", true);
+      return;
+    }
+
+    try {
+      api.events.create(data, admin.id);
+      say("✓ Афиша успешно опубликована и отправлена в Telegram!", false);
+      document.getElementById("eventForm").reset();
+      render();
+    } catch (e) {
+      say(e.message, true);
+    }
+  }
+
+  /* ── Удаление афиши ── */
+  function deleteEvent(id) {
+    if (confirm("Удалить эту афишу мероприятия? Она также исчезнет из Telegram-бота.")) {
+      try {
+        api.events.delete(id, admin.id);
+        say("Афиша удалена", false);
+        render();
+      } catch (e) {
+        say(e.message, true);
+      }
+    }
+  }
+
+  /* ── Принудительная синхронизация с ботом ── */
+  function forceAdminSync() {
+    say("🔄 Синхронизация с ботом и единой базой...", false);
+    api.sync(() => {
+      render();
+      say("✓ База синхронизирована с ботом!", false);
+    });
+  }
+
+  /* ── Скачивание диплома ученика администратором ── */
+  function downloadAchDiplomaAdmin(id) {
+    const ach = api.achievements.get(id);
+    if (!ach) return say("Достижение не найдено", true);
+    const u = api.users.get(ach.userId);
+    DiplomaGenerator.download({
+      name: u ? u.name : "Ученик лицея",
+      title: ach.title,
+      category: ach.category,
+      result: ach.result,
+      date: ach.date
+    });
+  }
+
   if (admin) render();
+
+  window.addEventListener('lyceum:db-synced', () => {
+    if (admin) render();
+  });
+
+  window.addEventListener('lyceum:server-status', (e) => {
+    const badge = document.getElementById("adminSyncBadge");
+    if (!badge) return;
+    if (e.detail && e.detail.online) {
+      badge.textContent = "БОТ LIVE";
+      badge.className = "sync-status-pill sync-online";
+      badge.title = "Связь с единым сервером и Telegram-ботом активна";
+    } else {
+      badge.textContent = "ОФФЛАЙН КЭШ";
+      badge.className = "sync-status-pill sync-offline";
+      badge.title = "Сервер временно недоступен. Запустите run_bot.bat или run_server.bat";
+    }
+  });
 </script>
 
 </body>
